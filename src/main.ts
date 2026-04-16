@@ -1,4 +1,4 @@
-import { Plugin, WorkspaceLeaf, Notice } from "obsidian";
+import { Plugin, Notice } from "obsidian";
 import {
 	type CorvidAgentSettings,
 	DEFAULT_SETTINGS,
@@ -38,11 +38,11 @@ export default class CorvidAgentPlugin extends Plugin {
 		this.registerView(CHAT_VIEW_TYPE, (leaf) => new CorvidChatView(leaf, this));
 
 		// Ribbon icon to open chat
-		this.addRibbonIcon("message-circle", "Open Corvid Agent", () => {
+		this.addRibbonIcon("message-circle", "Open Corvid Chat", () => {
 			this.activateChatView();
 		});
 
-		// Commands
+		// Commands — always available
 		this.addCommand({
 			id: "open-chat",
 			name: "Open chat",
@@ -59,44 +59,55 @@ export default class CorvidAgentPlugin extends Plugin {
 			},
 		});
 
+		// Commands — corvid-agent only
 		this.addCommand({
 			id: "create-work-task",
-			name: "Create work task",
-			callback: async () => {
-				// Simple prompt — could be a modal in the future
-				const description = await this.promptUser("Work task description:");
-				if (!description) return;
-				try {
-					const task = await this.client.createWorkTask(description);
-					new Notice(`Work task created: ${task.id}`);
-				} catch (err) {
-					new Notice(`Failed to create task: ${err}`);
-				}
+			name: "Create work task (Corvid Agent)",
+			checkCallback: (checking) => {
+				if (!this.client.isCorvidAgent) return false;
+				if (checking) return true;
+				this.promptUser("Work task description:").then(async (description) => {
+					if (!description) return;
+					try {
+						const task = await this.client.createWorkTask(description);
+						new Notice(`Work task created: ${task.id}`);
+					} catch (err) {
+						new Notice(`Failed to create task: ${err}`);
+					}
+				});
+				return true;
 			},
 		});
 
 		this.addCommand({
 			id: "list-work-tasks",
-			name: "List work tasks",
-			callback: async () => {
-				try {
-					const tasks = await this.client.listWorkTasks();
-					if (tasks.length === 0) {
-						new Notice("No active work tasks");
-						return;
-					}
-					const summary = tasks
-						.slice(0, 10)
-						.map((t) => `${t.status}: ${t.description.slice(0, 50)}`)
-						.join("\n");
-					new Notice(summary, 10000);
-				} catch (err) {
-					new Notice(`Failed to list tasks: ${err}`);
-				}
+			name: "List work tasks (Corvid Agent)",
+			checkCallback: (checking) => {
+				if (!this.client.isCorvidAgent) return false;
+				if (checking) return true;
+				this.client
+					.listWorkTasks()
+					.then((tasks) => {
+						if (tasks.length === 0) {
+							new Notice("No active work tasks");
+							return;
+						}
+						const summary = tasks
+							.slice(0, 10)
+							.map(
+								(t) => `${t.status}: ${t.description.slice(0, 50)}`,
+							)
+							.join("\n");
+						new Notice(summary, 10000);
+					})
+					.catch((err) => {
+						new Notice(`Failed to list tasks: ${err}`);
+					});
+				return true;
 			},
 		});
 
-		// Memory commands
+		// Memory commands (conditionally available based on provider)
 		registerMemoryCommands(this);
 
 		// Settings tab
@@ -108,7 +119,11 @@ export default class CorvidAgentPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData(),
+		);
 	}
 
 	async saveSettings(): Promise<void> {
@@ -138,9 +153,11 @@ export default class CorvidAgentPlugin extends Plugin {
 		return null;
 	}
 
-	private promptUser(message: string): Promise<string | null> {
+	promptUser(message: string): Promise<string | null> {
 		return new Promise((resolve) => {
-			const modal = new (class extends (require("obsidian") as typeof import("obsidian")).Modal {
+			const modal = new (class extends (
+				require("obsidian") as typeof import("obsidian")
+			).Modal {
 				result: string | null = null;
 				onOpen(): void {
 					const { contentEl } = this;
@@ -149,7 +166,10 @@ export default class CorvidAgentPlugin extends Plugin {
 						cls: "corvid-prompt-input",
 						attr: { rows: "3" },
 					});
-					const btn = contentEl.createEl("button", { text: "Submit", cls: "mod-cta" });
+					const btn = contentEl.createEl("button", {
+						text: "Submit",
+						cls: "mod-cta",
+					});
 					btn.addEventListener("click", () => {
 						this.result = input.value.trim() || null;
 						this.close();

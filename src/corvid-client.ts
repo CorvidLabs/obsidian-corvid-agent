@@ -1,5 +1,11 @@
 import { requestUrl } from "obsidian";
 import type { CorvidAgentSettings } from "./settings";
+import {
+	type Provider,
+	type ProviderConfig,
+	type ChatHistoryMessage,
+	createProvider,
+} from "./providers";
 
 /** Message types matching corvid-agent shared/ws-protocol.ts */
 
@@ -63,7 +69,11 @@ type ServerMessage =
 	| ServerSessionEventMessage
 	| ServerErrorMessage;
 
-export type ConnectionState = "disconnected" | "connecting" | "connected" | "authenticated";
+export type ConnectionState =
+	| "disconnected"
+	| "connecting"
+	| "connected"
+	| "authenticated";
 
 export interface ChatMessage {
 	role: "user" | "assistant" | "system";
@@ -88,13 +98,55 @@ export class CorvidClient {
 	private connectionState: ConnectionState = "disconnected";
 	private streamBuffer = "";
 
+	/** Direct API provider (non-corvid-agent backends) */
+	private provider: Provider | null = null;
+	/** Message history for direct API providers */
+	private messageHistory: ChatHistoryMessage[] = [];
+
 	constructor(settings: CorvidAgentSettings, events: CorvidClientEvents) {
 		this.settings = settings;
 		this.events = events;
+		this.initProvider();
+	}
+
+	private initProvider(): void {
+		if (this.settings.provider !== "corvid-agent") {
+			this.provider = createProvider(this.getProviderConfig());
+		} else {
+			this.provider = null;
+		}
+	}
+
+	private getProviderConfig(): ProviderConfig {
+		return {
+			type: this.settings.provider,
+			serverUrl: this.settings.serverUrl,
+			apiKey: this.settings.apiKey,
+			model: this.settings.model,
+			systemPrompt: this.settings.systemPrompt,
+			agentId: this.settings.agentId,
+			defaultProject: this.settings.defaultProject,
+		};
+	}
+
+	get isCorvidAgent(): boolean {
+		return this.settings.provider === "corvid-agent";
+	}
+
+	get activeProvider(): Provider | null {
+		return this.provider;
 	}
 
 	updateSettings(settings: CorvidAgentSettings): void {
+		const providerChanged = this.settings.provider !== settings.provider;
 		this.settings = settings;
+
+		if (providerChanged) {
+			this.disconnect();
+			this.initProvider();
+		} else if (this.provider) {
+			this.provider.updateConfig(this.getProviderConfig());
+		}
 	}
 
 	getConnectionState(): ConnectionState {
@@ -106,6 +158,12 @@ export class CorvidClient {
 	}
 
 	connect(): void {
+		if (this.settings.provider !== "corvid-agent") {
+			// Direct API providers don't need persistent connections
+			this.setConnectionState("connected");
+			return;
+		}
+
 		if (this.ws) {
 			this.disconnect();
 		}
@@ -152,12 +210,61 @@ export class CorvidClient {
 			this.ws.close();
 			this.ws = null;
 		}
+		if (this.provider) {
+			this.provider.abort();
+		}
 		this.setConnectionState("disconnected");
 	}
 
 	async sendMessage(content: string): Promise<void> {
+		if (this.settings.provider !== "corvid-agent") {
+			return this.sendDirectApiMessage(content);
+		}
+		return this.sendCorvidAgentMessage(content);
+	}
+
+	private async sendDirectApiMessage(content: string): Promise<void> {
+		if (!this.provider) return;
+
+		// Add user message to UI immediately
+		this.events.onMessage({
+			role: "user",
+			content,
+			timestamp: new Date(),
+		});
+
+		// Track history for multi-turn context
+		this.messageHistory.push({ role: "user", content });
+
+		let fullResponse = "";
+		try {
+			await this.provider.sendMessage(content, this.messageHistory.slice(0, -1), {
+				onToken: (text) => {
+					fullResponse = text; // provider accumulates, but we get deltas
+					this.events.onStreamDelta(text);
+				},
+				onComplete: (text) => {
+					this.messageHistory.push({ role: "assistant", content: text });
+					this.events.onMessage({
+						role: "assistant",
+						content: text,
+						timestamp: new Date(),
+					});
+					this.events.onStreamEnd();
+				},
+				onError: (error) => {
+					this.events.onError(error);
+					this.events.onStreamEnd();
+				},
+			});
+		} catch (err) {
+			this.events.onError(err instanceof Error ? err.message : String(err));
+			this.events.onStreamEnd();
+		}
+	}
+
+	private async sendCorvidAgentMessage(content: string): Promise<void> {
 		if (!this.currentSessionId) {
-			// Create a new session via REST, then subscribe
 			const session = await this.createSession(content);
 			this.currentSessionId = session.id;
 			this.send({ type: "subscribe", sessionId: session.id });
@@ -176,11 +283,17 @@ export class CorvidClient {
 		});
 	}
 
-	async newSession(): Promise<void> {
+	newSession(): void {
 		this.currentSessionId = null;
+		this.messageHistory = [];
+		if (this.provider) {
+			this.provider.abort();
+		}
 	}
 
-	private async createSession(initialPrompt: string): Promise<{ id: string }> {
+	private async createSession(
+		initialPrompt: string,
+	): Promise<{ id: string }> {
 		const url = `${this.settings.serverUrl}/api/sessions`;
 		const body: Record<string, string> = {
 			agentId: this.settings.agentId,
@@ -283,13 +396,15 @@ export class CorvidClient {
 
 	private scheduleReconnect(): void {
 		if (this.reconnectTimer) return;
+		// Only auto-reconnect for corvid-agent WebSocket
+		if (this.settings.provider !== "corvid-agent") return;
 		this.reconnectTimer = setTimeout(() => {
 			this.reconnectTimer = null;
 			this.connect();
 		}, 3000);
 	}
 
-	// --- REST API methods ---
+	// --- REST API methods (corvid-agent only) ---
 
 	async recallMemory(params: {
 		key?: string;

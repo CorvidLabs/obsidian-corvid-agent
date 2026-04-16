@@ -1,16 +1,28 @@
-name: Release Obsidian Plugin
+name: Checks
 
 on:
   push:
-    tags:
-      - "*"
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pull-requests: write
 
 jobs:
-  build:
+  checks:
+    name: Lint, Type Check & Spec Validation
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -27,16 +39,8 @@ jobs:
       - name: Type check
         run: bun x tsc --noEmit
 
-      - name: Spec validation
+      - name: Spec validation (strict)
         uses: CorvidLabs/spec-sync@v4.2.0
         with:
           strict: 'true'
           comment: 'false'
-
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            main.js
-            manifest.json
-            styles.css

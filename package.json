@@ -1,13 +1,17 @@
 {
 	"name": "obsidian-corvid-agent",
-	"version": "0.1.0",
-	"description": "Obsidian plugin for corvid-agent — chat, memory sync, work tasks",
+	"version": "0.2.0",
+	"description": "AI chat plugin for Obsidian — supports Ollama, Claude, OpenAI, and corvid-agent backends",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
-		"build": "node esbuild.config.mjs production"
+		"build": "node esbuild.config.mjs production",
+		"spec:check": "bash scripts/specsync.sh check",
+		"spec:check:strict": "bash scripts/specsync.sh check --strict",
+		"spec:coverage": "bash scripts/specsync.sh coverage",
+		"spec:score": "bash scripts/specsync.sh score"
 	},
-	"keywords": ["obsidian", "corvid-agent", "ai", "algorand"],
+	"keywords": ["obsidian", "ai", "ollama", "claude", "openai", "corvid-agent", "chat"],
 	"author": "CorvidLabs",
 	"license": "MIT",
 	"devDependencies": {

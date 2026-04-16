@@ -2,6 +2,7 @@ import { ItemView, MarkdownRenderer, WorkspaceLeaf, setIcon } from "obsidian";
 import type CorvidAgentPlugin from "./main";
 import type { ChatMessage, ConnectionState } from "./corvid-client";
 import type { SerializedChatMessage } from "./settings";
+import { PROVIDER_OPTIONS } from "./providers";
 
 export const CHAT_VIEW_TYPE = "corvid-agent-chat";
 
@@ -24,7 +25,10 @@ export class CorvidChatView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Corvid Agent";
+		const opt = PROVIDER_OPTIONS.find(
+			(o) => o.value === this.plugin.settings.provider,
+		);
+		return opt?.label ?? "Corvid Agent";
 	}
 
 	getIcon(): string {
@@ -64,7 +68,7 @@ export class CorvidChatView extends ItemView {
 		const inputContainer = container.createDiv({ cls: "corvid-chat-input-container" });
 		this.inputEl = inputContainer.createEl("textarea", {
 			cls: "corvid-chat-input",
-			attr: { placeholder: "Message corvid-agent...", rows: "2" },
+			attr: { placeholder: this.getPlaceholder(), rows: "2" },
 		});
 
 		const sendBtn = inputContainer.createEl("button", {
@@ -128,7 +132,7 @@ export class CorvidChatView extends ItemView {
 				cls: "corvid-chat-message corvid-chat-assistant corvid-chat-streaming",
 			});
 			const header = this.streamEl.createDiv({ cls: "corvid-chat-message-header" });
-			header.createSpan({ text: "Agent", cls: "corvid-chat-role" });
+			header.createSpan({ text: this.getAssistantLabel(), cls: "corvid-chat-role" });
 			this.streamEl.createDiv({ cls: "corvid-chat-message-body" });
 		}
 
@@ -175,7 +179,7 @@ export class CorvidChatView extends ItemView {
 		});
 
 		const header = msgEl.createDiv({ cls: "corvid-chat-message-header" });
-		header.createSpan({ text: msg.role === "user" ? "You" : "Agent", cls: "corvid-chat-role" });
+		header.createSpan({ text: msg.role === "user" ? "You" : this.getAssistantLabel(), cls: "corvid-chat-role" });
 		header.createSpan({
 			text: msg.timestamp.toLocaleTimeString(),
 			cls: "corvid-chat-time",
@@ -274,6 +278,20 @@ export class CorvidChatView extends ItemView {
 			this.renderMessage(msg);
 		}
 		this.scrollToBottom();
+	}
+
+	private getPlaceholder(): string {
+		const opt = PROVIDER_OPTIONS.find(
+			(o) => o.value === this.plugin.settings.provider,
+		);
+		return `Message ${opt?.label ?? "agent"}...`;
+	}
+
+	private getAssistantLabel(): string {
+		const opt = PROVIDER_OPTIONS.find(
+			(o) => o.value === this.plugin.settings.provider,
+		);
+		return opt?.label ?? "Agent";
 	}
 
 	private scrollToBottom(): void {

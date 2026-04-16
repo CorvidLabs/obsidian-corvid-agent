@@ -133,29 +133,42 @@ class SaveMemoryModal extends Modal {
 }
 
 export function registerMemoryCommands(plugin: CorvidAgentPlugin): void {
+	// Memory commands — corvid-agent only
 	plugin.addCommand({
 		id: "search-memories",
-		name: "Search memories",
-		callback: () => {
+		name: "Search memories (Corvid Agent)",
+		checkCallback: (checking) => {
+			if (!plugin.client.isCorvidAgent) return false;
+			if (checking) return true;
 			new MemorySearchModal(plugin.app, plugin).open();
+			return true;
 		},
 	});
 
 	plugin.addCommand({
 		id: "note-to-memory",
-		name: "Save current note as memory",
-		editorCallback: async (editor) => {
+		name: "Save current note as memory (Corvid Agent)",
+		checkCallback: (checking) => {
+			if (!plugin.client.isCorvidAgent) return false;
+			if (checking) return true;
 			const file = plugin.app.workspace.getActiveFile();
 			if (!file) {
 				new Notice("No active file");
-				return;
+				return true;
+			}
+			const editor = plugin.app.workspace.activeEditor?.editor;
+			if (!editor) {
+				new Notice("No active editor");
+				return true;
 			}
 			const content = editor.getValue();
 			const key = `note-${file.basename}`;
 			new SaveMemoryModal(plugin.app, plugin, key, content).open();
+			return true;
 		},
 	});
 
+	// Selection commands — available for all providers
 	plugin.addCommand({
 		id: "send-selection",
 		name: "Send selection to agent",
