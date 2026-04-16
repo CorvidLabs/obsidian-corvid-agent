@@ -1,0 +1,19 @@
+{
+	"name": "obsidian-corvid-agent",
+	"version": "0.1.0",
+	"description": "Obsidian plugin for corvid-agent — chat, memory sync, work tasks",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "node esbuild.config.mjs production"
+	},
+	"keywords": ["obsidian", "corvid-agent", "ai", "algorand"],
+	"author": "CorvidLabs",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^22.0.0",
+		"esbuild": "^0.24.0",
+		"obsidian": "^1.7.2",
+		"typescript": "^5.7.0"
+	}
+}

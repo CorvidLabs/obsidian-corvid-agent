@@ -1,0 +1,10 @@
+{
+	"id": "corvid-agent",
+	"name": "Corvid Agent",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "Chat with your corvid-agent instance, sync memories, and trigger work tasks — all from Obsidian.",
+	"author": "CorvidLabs",
+	"authorUrl": "https://github.com/CorvidLabs",
+	"isDesktopOnly": false
+}

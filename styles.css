@@ -1,0 +1,194 @@
+/* Corvid Agent Chat */
+
+.corvid-chat-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 0;
+}
+
+.corvid-chat-status {
+	padding: 4px 12px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.corvid-chat-toolbar {
+	display: flex;
+	padding: 6px 8px;
+	gap: 6px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.corvid-chat-new-btn {
+	font-size: 12px;
+	padding: 4px 10px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+}
+
+.corvid-chat-messages {
+	flex: 1;
+	overflow-y: auto;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.corvid-chat-message {
+	border-radius: var(--radius-m);
+	padding: 8px 12px;
+	max-width: 95%;
+}
+
+.corvid-chat-user {
+	align-self: flex-end;
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.corvid-chat-assistant {
+	align-self: flex-start;
+	background: var(--background-secondary);
+}
+
+.corvid-chat-error {
+	align-self: center;
+	background: var(--background-modifier-error);
+	color: var(--text-error);
+	font-size: 12px;
+	padding: 4px 8px;
+}
+
+.corvid-chat-streaming {
+	opacity: 0.8;
+	border-left: 2px solid var(--interactive-accent);
+}
+
+.corvid-chat-message-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 4px;
+}
+
+.corvid-chat-role {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.corvid-chat-time {
+	font-size: 10px;
+	opacity: 0.6;
+}
+
+.corvid-chat-message-body {
+	font-size: 14px;
+	line-height: 1.5;
+	word-wrap: break-word;
+}
+
+.corvid-chat-message-body pre {
+	background: var(--background-primary);
+	padding: 8px;
+	border-radius: var(--radius-s);
+	overflow-x: auto;
+}
+
+.corvid-chat-message-body code {
+	font-size: 13px;
+}
+
+.corvid-chat-input-container {
+	display: flex;
+	gap: 8px;
+	padding: 8px 12px;
+	border-top: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+}
+
+.corvid-chat-input {
+	flex: 1;
+	resize: none;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: 8px;
+	font-size: 14px;
+	font-family: inherit;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	min-height: 36px;
+	max-height: 120px;
+}
+
+.corvid-chat-input:focus {
+	border-color: var(--interactive-accent);
+	outline: none;
+}
+
+.corvid-chat-send-btn {
+	padding: 8px 16px;
+	border-radius: var(--radius-s);
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-weight: 600;
+	cursor: pointer;
+	border: none;
+	align-self: flex-end;
+}
+
+.corvid-chat-send-btn:hover {
+	opacity: 0.9;
+}
+
+/* Memory modals */
+
+.corvid-memory-key {
+	font-weight: 600;
+}
+
+.corvid-memory-preview {
+	color: var(--text-muted);
+}
+
+.corvid-memory-detail {
+	white-space: pre-wrap;
+	max-height: 400px;
+	overflow-y: auto;
+	background: var(--background-secondary);
+	padding: 12px;
+	border-radius: var(--radius-s);
+}
+
+.corvid-memory-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.corvid-memory-key-input {
+	width: 100%;
+	margin-bottom: 8px;
+	padding: 6px;
+}
+
+.corvid-memory-preview-box {
+	white-space: pre-wrap;
+	max-height: 200px;
+	overflow-y: auto;
+	background: var(--background-secondary);
+	padding: 8px;
+	border-radius: var(--radius-s);
+	margin-bottom: 12px;
+}
+
+.corvid-prompt-input {
+	width: 100%;
+	margin-bottom: 8px;
+	padding: 6px;
+	font-family: inherit;
+}
