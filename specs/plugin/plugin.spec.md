@@ -32,7 +32,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `Provider` | `src/providers.ts` | Abstract provider interface |
 | `ProviderConfig` | `src/providers.ts` | Provider configuration shape |
 | `StreamCallbacks` | `src/providers.ts` | Callbacks for streaming responses (onToken, onComplete, onError) |
-| `ChatHistoryMessage` | `src/providers.ts` | Message shape for multi-turn conversation history |
+| `ChatHistoryMessage` | `src/providers.ts` | Role-based message for multi-turn context |
 | `ChatMessage` | `src/corvid-client.ts` | Runtime chat message with Date timestamp |
 | `StreamEvent` | `src/corvid-client.ts` | WebSocket stream event shape for real-time responses |
 | `ConnectionState` | `src/corvid-client.ts` | Union: `"disconnected" \| "connecting" \| "connected" \| "authenticated"` |
@@ -54,8 +54,8 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 
 | Constant | File | Description |
 |----------|------|-------------|
-| `CHAT_VIEW_TYPE` | `src/chat-view.ts` | View type identifier for the chat sidebar |
-| `PROVIDER_OPTIONS` | `src/providers.ts` | Array of available provider configurations with defaults |
+| `CHAT_VIEW_TYPE` | `src/chat-view.ts` | View type identifier: `"corvid-agent-chat"` |
+| `PROVIDER_OPTIONS` | `src/providers.ts` | Provider metadata array (defaults, URLs, models, API key requirements) |
 | `DEFAULT_SETTINGS` | `src/settings.ts` | Default plugin settings object |
 
 ### Exported Functions
