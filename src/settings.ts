@@ -1,6 +1,12 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type CorvidAgentPlugin from "./main";
 
+export interface SerializedChatMessage {
+	role: "user" | "assistant" | "system";
+	content: string;
+	timestamp: string; // ISO string for JSON serialization
+}
+
 export interface CorvidAgentSettings {
 	serverUrl: string;
 	apiKey: string;
@@ -8,6 +14,7 @@ export interface CorvidAgentSettings {
 	agentId: string;
 	includeVaultContext: boolean;
 	maxContextLength: number;
+	chatHistory: SerializedChatMessage[];
 }
 
 export const DEFAULT_SETTINGS: CorvidAgentSettings = {
@@ -17,6 +24,7 @@ export const DEFAULT_SETTINGS: CorvidAgentSettings = {
 	agentId: "",
 	includeVaultContext: false,
 	maxContextLength: 8000,
+	chatHistory: [],
 };
 
 export class CorvidAgentSettingTab extends PluginSettingTab {

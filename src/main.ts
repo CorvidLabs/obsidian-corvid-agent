@@ -26,6 +26,7 @@ export default class CorvidAgentPlugin extends Plugin {
 				this.getChatView()?.appendStreamDelta(text);
 			},
 			onStreamEnd: () => {
+				this.getChatView()?.hideLoading();
 				this.getChatView()?.clearStream();
 			},
 			onError: (error) => {

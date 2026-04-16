@@ -23,11 +23,13 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.corvid-chat-new-btn {
+.corvid-chat-toolbar-btn {
 	font-size: 12px;
-	padding: 4px 10px;
+	padding: 6px 12px;
 	border-radius: var(--radius-s);
 	cursor: pointer;
+	min-height: 32px;
+	min-width: 44px;
 }
 
 .corvid-chat-messages {
@@ -90,6 +92,15 @@
 	font-size: 14px;
 	line-height: 1.5;
 	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.corvid-chat-message-body p:first-child {
+	margin-top: 0;
+}
+
+.corvid-chat-message-body p:last-child {
+	margin-bottom: 0;
 }
 
 .corvid-chat-message-body pre {
@@ -103,12 +114,90 @@
 	font-size: 13px;
 }
 
+/* Code block copy button */
+
+.corvid-code-block-wrapper {
+	position: relative;
+}
+
+.corvid-code-copy-btn {
+	position: absolute;
+	top: 4px;
+	right: 4px;
+	padding: 4px;
+	min-height: 28px;
+	min-width: 28px;
+	border-radius: var(--radius-s);
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1;
+}
+
+.corvid-code-block-wrapper:hover .corvid-code-copy-btn {
+	opacity: 1;
+}
+
+.corvid-code-copy-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.corvid-code-copy-success {
+	color: var(--text-success);
+}
+
+/* Loading / typing indicator */
+
+.corvid-chat-loading {
+	align-self: flex-start;
+	display: flex;
+	gap: 4px;
+	padding: 12px 16px;
+	background: var(--background-secondary);
+	border-radius: var(--radius-m);
+}
+
+.corvid-chat-loading-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--text-muted);
+	animation: corvid-loading-bounce 1.4s infinite ease-in-out both;
+}
+
+.corvid-chat-loading-dot:nth-child(1) {
+	animation-delay: -0.32s;
+}
+
+.corvid-chat-loading-dot:nth-child(2) {
+	animation-delay: -0.16s;
+}
+
+@keyframes corvid-loading-bounce {
+	0%, 80%, 100% {
+		transform: scale(0.6);
+		opacity: 0.4;
+	}
+	40% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+/* Input area */
+
 .corvid-chat-input-container {
 	display: flex;
 	gap: 8px;
 	padding: 8px 12px;
 	border-top: 1px solid var(--background-modifier-border);
 	background: var(--background-primary);
+	align-items: flex-end;
 }
 
 .corvid-chat-input {
@@ -131,18 +220,63 @@
 }
 
 .corvid-chat-send-btn {
-	padding: 8px 16px;
+	padding: 8px;
+	min-height: 36px;
+	min-width: 36px;
 	border-radius: var(--radius-s);
 	background: var(--interactive-accent);
 	color: var(--text-on-accent);
 	font-weight: 600;
 	cursor: pointer;
 	border: none;
-	align-self: flex-end;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .corvid-chat-send-btn:hover {
 	opacity: 0.9;
+}
+
+/* Mobile-friendly adjustments */
+
+.is-mobile .corvid-chat-toolbar-btn {
+	min-height: 44px;
+	min-width: 44px;
+	padding: 8px 16px;
+	font-size: 14px;
+}
+
+.is-mobile .corvid-chat-input {
+	font-size: 16px; /* Prevents iOS zoom on focus */
+	min-height: 44px;
+	padding: 10px;
+}
+
+.is-mobile .corvid-chat-send-btn {
+	min-height: 44px;
+	min-width: 44px;
+	padding: 10px;
+}
+
+.is-mobile .corvid-chat-message {
+	max-width: 100%;
+	padding: 10px 14px;
+}
+
+.is-mobile .corvid-chat-message-body {
+	font-size: 15px;
+}
+
+.is-mobile .corvid-chat-messages {
+	padding: 8px;
+	gap: 10px;
+}
+
+.is-mobile .corvid-code-copy-btn {
+	opacity: 1; /* Always visible on touch — no hover */
+	min-height: 36px;
+	min-width: 36px;
 }
 
 /* Memory modals */
