@@ -13,6 +13,8 @@ export class CorvidChatView extends ItemView {
 	private statusEl: HTMLElement;
 	private loadingEl: HTMLElement | null = null;
 	private streamEl: HTMLElement | null = null;
+	private streamContent = "";
+	private streamRenderTimer: ReturnType<typeof setTimeout> | null = null;
 	private messages: ChatMessage[] = [];
 
 	constructor(leaf: WorkspaceLeaf, plugin: CorvidAgentPlugin) {
@@ -85,6 +87,12 @@ export class CorvidChatView extends ItemView {
 			}
 		});
 
+		// Auto-grow textarea
+		this.inputEl.addEventListener("input", () => {
+			this.inputEl.style.height = "auto";
+			this.inputEl.style.height = `${Math.min(this.inputEl.scrollHeight, 120)}px`;
+		});
+
 		// Restore persisted chat history
 		this.restoreHistory();
 
@@ -105,14 +113,15 @@ export class CorvidChatView extends ItemView {
 			connected: "Connected",
 			authenticated: "Connected",
 		};
-		const colors: Record<ConnectionState, string> = {
-			disconnected: "var(--text-error)",
-			connecting: "var(--text-warning)",
-			connected: "var(--text-success)",
-			authenticated: "var(--text-success)",
+		const dotClasses: Record<ConnectionState, string> = {
+			disconnected: "corvid-status-red",
+			connecting: "corvid-status-yellow",
+			connected: "corvid-status-green",
+			authenticated: "corvid-status-green",
 		};
-		this.statusEl.setText(labels[state]);
-		this.statusEl.style.color = colors[state];
+		this.statusEl.empty();
+		const dot = this.statusEl.createSpan({ cls: `corvid-status-dot ${dotClasses[state]}` });
+		this.statusEl.createSpan({ text: ` ${labels[state]}` });
 	}
 
 	addMessage(msg: ChatMessage): void {
@@ -134,20 +143,37 @@ export class CorvidChatView extends ItemView {
 			const header = this.streamEl.createDiv({ cls: "corvid-chat-message-header" });
 			header.createSpan({ text: this.getAssistantLabel(), cls: "corvid-chat-role" });
 			this.streamEl.createDiv({ cls: "corvid-chat-message-body" });
+			this.streamContent = "";
 		}
 
-		const body = this.streamEl.querySelector(".corvid-chat-message-body");
-		if (body) {
-			body.textContent = (body.textContent ?? "") + text;
-		}
+		this.streamContent += text;
+
+		// Debounce markdown re-renders to avoid excessive DOM thrash
+		if (this.streamRenderTimer) clearTimeout(this.streamRenderTimer);
+		this.streamRenderTimer = setTimeout(() => {
+			this.renderStreamMarkdown();
+		}, 50);
+	}
+
+	private renderStreamMarkdown(): void {
+		if (!this.streamEl) return;
+		const body = this.streamEl.querySelector(".corvid-chat-message-body") as HTMLElement;
+		if (!body) return;
+		body.empty();
+		MarkdownRenderer.render(this.app, this.streamContent, body, "", this.plugin);
 		this.scrollToBottom();
 	}
 
 	clearStream(): void {
+		if (this.streamRenderTimer) {
+			clearTimeout(this.streamRenderTimer);
+			this.streamRenderTimer = null;
+		}
 		if (this.streamEl) {
 			this.streamEl.remove();
 			this.streamEl = null;
 		}
+		this.streamContent = "";
 	}
 
 	showError(error: string): void {
@@ -189,8 +215,8 @@ export class CorvidChatView extends ItemView {
 
 		if (msg.role === "assistant") {
 			MarkdownRenderer.render(this.app, msg.content, bodyEl, "", this.plugin);
-			// Add copy buttons to code blocks after rendering
 			this.addCopyButtons(bodyEl);
+			this.addMessageCopyButton(msgEl, msg.content);
 		} else {
 			bodyEl.setText(msg.content);
 		}
@@ -220,6 +246,24 @@ export class CorvidChatView extends ItemView {
 					copyBtn.removeClass("corvid-code-copy-success");
 				}, 2000);
 			});
+		});
+	}
+
+	private addMessageCopyButton(msgEl: HTMLElement, content: string): void {
+		const copyBtn = msgEl.createEl("button", {
+			cls: "corvid-message-copy-btn",
+			attr: { "aria-label": "Copy message" },
+		});
+		setIcon(copyBtn, "copy");
+
+		copyBtn.addEventListener("click", async () => {
+			await navigator.clipboard.writeText(content);
+			setIcon(copyBtn, "check");
+			copyBtn.addClass("corvid-code-copy-success");
+			setTimeout(() => {
+				setIcon(copyBtn, "copy");
+				copyBtn.removeClass("corvid-code-copy-success");
+			}, 2000);
 		});
 	}
 
