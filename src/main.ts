@@ -11,6 +11,7 @@ import { ToolRegistry } from "./tools/registry";
 import { readNoteTool } from "./tools/read-note";
 import { getNoteMetadataTool } from "./tools/get-note-metadata";
 import { createRecallMemoryTool } from "./tools/recall-memory";
+import { listNotesTool } from "./tools/list-notes";
 
 export default class CorvidAgentPlugin extends Plugin {
 	settings: CorvidAgentSettings;
@@ -124,6 +125,7 @@ export default class CorvidAgentPlugin extends Plugin {
 		if (this.settings.enableTools) {
 			this.toolRegistry.register(readNoteTool);
 			this.toolRegistry.register(getNoteMetadataTool);
+			this.toolRegistry.register(listNotesTool);
 			if (this.settings.provider === "corvid-agent") {
 				this.toolRegistry.register(createRecallMemoryTool(this.client));
 			}
