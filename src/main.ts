@@ -35,6 +35,9 @@ export default class CorvidAgentPlugin extends Plugin {
 			onError: (error) => {
 				this.getChatView()?.showError(error);
 			},
+			onToolCallUpdate: (record) => {
+				this.getChatView()?.updateToolCall(record);
+			},
 		});
 
 		// Register the chat view
@@ -113,8 +116,9 @@ export default class CorvidAgentPlugin extends Plugin {
 		// Memory commands (conditionally available based on provider)
 		registerMemoryCommands(this);
 
-		// Tool registry — register vault tools when enabled
-		this.toolRegistry = new ToolRegistry();
+		// Tool registry — wire up client registry with app and register tools
+		this.toolRegistry = this.client.toolRegistry;
+		this.toolRegistry.setApp(this.app);
 		if (this.settings.enableTools) {
 			this.toolRegistry.register(readNoteTool);
 		}

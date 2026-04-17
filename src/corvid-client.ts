@@ -4,8 +4,15 @@ import {
 	type Provider,
 	type ProviderConfig,
 	type ChatHistoryMessage,
+	type ToolCall as ProviderToolCall,
 	createProvider,
 } from "./providers";
+import {
+	ToolRegistry,
+	type ToolCall,
+	type ToolCallRecord,
+	type ToolCallStatus,
+} from "./tools/registry";
 
 /** Message types matching corvid-agent shared/ws-protocol.ts */
 
@@ -87,6 +94,7 @@ export interface CorvidClientEvents {
 	onStreamDelta: (text: string) => void;
 	onStreamEnd: () => void;
 	onError: (error: string) => void;
+	onToolCallUpdate?: (record: ToolCallRecord) => void;
 }
 
 export class CorvidClient {
@@ -102,6 +110,9 @@ export class CorvidClient {
 	private provider: Provider | null = null;
 	/** Message history for direct API providers */
 	private messageHistory: ChatHistoryMessage[] = [];
+
+	/** Tool registry — shared across providers */
+	readonly toolRegistry = new ToolRegistry();
 
 	constructor(settings: CorvidAgentSettings, events: CorvidClientEvents) {
 		this.settings = settings;
@@ -236,31 +247,138 @@ export class CorvidClient {
 		// Track history for multi-turn context
 		this.messageHistory.push({ role: "user", content });
 
-		let fullResponse = "";
+		const toolsEnabled =
+			this.settings.enableTools && this.toolRegistry.list().length > 0;
+		const maxDepth = this.settings.maxToolCallDepth;
+
 		try {
-			await this.provider.sendMessage(content, this.messageHistory.slice(0, -1), {
-				onToken: (text) => {
-					fullResponse = text; // provider accumulates, but we get deltas
-					this.events.onStreamDelta(text);
-				},
-				onComplete: (text) => {
-					this.messageHistory.push({ role: "assistant", content: text });
-					this.events.onMessage({
-						role: "assistant",
-						content: text,
-						timestamp: new Date(),
-					});
-					this.events.onStreamEnd();
-				},
-				onError: (error) => {
-					this.events.onError(error);
-					this.events.onStreamEnd();
-				},
-			});
+			await this.runProviderLoop(toolsEnabled, maxDepth);
 		} catch (err) {
 			this.events.onError(err instanceof Error ? err.message : String(err));
 			this.events.onStreamEnd();
 		}
+	}
+
+	/**
+	 * Invoke the provider, dispatch any tool calls, and re-invoke
+	 * until the model produces a final text response or hits the depth cap.
+	 */
+	private async runProviderLoop(
+		toolsEnabled: boolean,
+		maxDepth: number,
+	): Promise<void> {
+		if (!this.provider) return;
+
+		for (let depth = 0; depth <= maxDepth; depth++) {
+			const result = await this.invokeProvider(toolsEnabled);
+
+			// No tool call — model produced a final text response
+			if (!result.toolCall) {
+				return;
+			}
+
+			// Depth cap reached — error out
+			if (depth === maxDepth) {
+				this.events.onError(
+					`Tool call depth limit (${maxDepth}) exceeded — aborting`,
+				);
+				this.events.onStreamEnd();
+				return;
+			}
+
+			// Dispatch the tool call
+			const record: ToolCallRecord = {
+				call: result.toolCall,
+				status: "running",
+			};
+			this.events.onToolCallUpdate?.(record);
+
+			const toolResult = await this.toolRegistry.execute(result.toolCall);
+
+			record.result = toolResult;
+			record.status = toolResult.isError ? "error" : "done";
+			this.events.onToolCallUpdate?.(record);
+
+			// Append tool result to history so the model can see it
+			this.messageHistory.push({
+				role: "user",
+				content: `[Tool result for ${result.toolCall.name}]: ${toolResult.content}`,
+			});
+		}
+	}
+
+	/**
+	 * Single provider invocation. Returns the tool call if the model
+	 * requested one, or null if it produced a final text response.
+	 */
+	private invokeProvider(
+		toolsEnabled: boolean,
+	): Promise<{ toolCall: ToolCall | null }> {
+		return new Promise((resolve, reject) => {
+			if (!this.provider) {
+				reject(new Error("No provider"));
+				return;
+			}
+
+			let pendingToolCall: ToolCall | null = null;
+
+			const lastContent = this.messageHistory[this.messageHistory.length - 1].content;
+			const contentStr = typeof lastContent === "string"
+				? lastContent
+				: lastContent.map((c) => c.type === "text" ? c.text : "").join("");
+
+			this.provider.sendMessage(
+				// Last user message is already in history — send it as string
+				// and let history carry the context
+				contentStr,
+				this.messageHistory.slice(0, -1),
+				{
+					onToken: (text) => {
+						this.events.onStreamDelta(text);
+					},
+					onComplete: (text) => {
+						if (pendingToolCall) {
+							// Model produced text before a tool call — still process tool
+							if (text) {
+								this.messageHistory.push({ role: "assistant", content: text });
+							}
+							resolve({ toolCall: pendingToolCall });
+						} else {
+							this.messageHistory.push({ role: "assistant", content: text });
+							this.events.onMessage({
+								role: "assistant",
+								content: text,
+								timestamp: new Date(),
+							});
+							this.events.onStreamEnd();
+							resolve({ toolCall: null });
+						}
+					},
+					onError: (error) => {
+						this.events.onError(error);
+						this.events.onStreamEnd();
+						reject(new Error(error));
+					},
+					onToolCall: toolsEnabled
+						? (tc: ProviderToolCall) => {
+								const call: ToolCall = {
+									id: tc.id,
+									name: tc.name,
+									input: tc.input,
+								};
+								// Emit pending status
+								const record: ToolCallRecord = {
+									call,
+									status: "pending",
+								};
+								this.events.onToolCallUpdate?.(record);
+
+								pendingToolCall = call;
+							}
+						: undefined,
+				},
+			);
+		});
 	}
 
 	private async sendCorvidAgentMessage(content: string): Promise<void> {

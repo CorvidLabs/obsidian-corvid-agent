@@ -36,16 +36,19 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `StreamCallbacks` | `src/providers.ts` | Callbacks for streaming responses (onToken, onComplete, onError, onToolCall) |
 | `ChatHistoryMessage` | `src/providers.ts` | Role-based message for multi-turn context |
 | `Tool` | `src/tools/registry.ts` | Vault tool interface (name, description, inputSchema, execute) |
-| `ToolInputSchema` | `src/tools/registry.ts` | JSON Schema subset for tool input parameters |
-| `ToolResult` | `src/tools/registry.ts` | Discriminated union: success with data or error with code (vault tools) |
+| `ToolInputSchema` | `src/tools/registry.ts` | JSON Schema shape for tool input parameters |
+| `ToolResult` | `src/tools/registry.ts` | Tool execution result: `{ content: string, isError?: boolean }` |
+| `ToolCall` | `src/tools/registry.ts` | Tool invocation record: id, name, input |
+| `ToolCallStatus` | `src/tools/registry.ts` | Union: `"pending" \| "running" \| "done" \| "error"` |
+| `ToolCallRecord` | `src/tools/registry.ts` | Full tool call state: call, status, result |
 | `ToolDefinition` | `src/providers.ts` | Tool schema for providers (name, description, input_schema) |
 | `ToolCall` | `src/providers.ts` | Emitted when model invokes a tool (id, name, input) |
-| `ToolResult` | `src/providers.ts` | Result returned to model after tool execution (provider layer) |
+| `ToolResult` | `src/providers.ts` | Result returned to model after tool execution (tool_use_id, content, is_error) |
 | `MessageContent` | `src/providers.ts` | Union of text, tool_use, and tool_result content blocks |
 | `ChatMessage` | `src/corvid-client.ts` | Runtime chat message with Date timestamp |
 | `StreamEvent` | `src/corvid-client.ts` | WebSocket stream event shape for real-time responses |
 | `ConnectionState` | `src/corvid-client.ts` | Union: `"disconnected" \| "connecting" \| "connected" \| "authenticated"` |
-| `CorvidClientEvents` | `src/corvid-client.ts` | Event callbacks for the client |
+| `CorvidClientEvents` | `src/corvid-client.ts` | Event callbacks for the client (includes `onToolCallUpdate`) |
 
 ### Exported Classes
 
@@ -57,7 +60,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `OllamaProvider` | `src/providers.ts` | Ollama chat API with streaming |
 | `ClaudeProvider` | `src/providers.ts` | Anthropic Messages API with SSE streaming and tool_use support |
 | `OpenAIProvider` | `src/providers.ts` | OpenAI Chat Completions API with SSE streaming |
-| `ToolRegistry` | `src/tools/registry.ts` | Tool registration and dispatch |
+| `ToolRegistry` | `src/tools/registry.ts` | Tool registration and dispatch — register, unregister, execute, getSchemas |
 | `CorvidAgentSettingTab` | `src/settings.ts` | Settings tab with dynamic fields per provider |
 
 ### Exported Constants
@@ -102,17 +105,18 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `defaultProject` | string | `""` | corvid-agent | Project ID |
 | `includeVaultContext` | boolean | `false` | All | Prepend active note |
 | `maxContextLength` | number | `8000` | All | Max context chars |
-| `enableTools` | boolean | `false` | All | Enable vault tools (read_note, etc.) |
+| `enableTools` | boolean | `false` | All | Enable tool dispatch loop |
+| `maxToolCallDepth` | number | `10` | All | Max consecutive tool calls before error |
 
 ## Vault Tools
 
-Tools allow the model to interact with the vault during chat. Tools are registered via `ToolRegistry` and dispatched by name.
+Tools allow the model to interact with the vault during chat. Tools are registered via `ToolRegistry` and dispatched by name in the tool loop.
 
 ### Registered Tools
 
 | Tool | File | Input | Output |
 |------|------|-------|--------|
-| `read_note` | `src/tools/read-note.ts` | `{ path: string }` | `{ path, content, frontmatter? }` or `{ error, code }` |
+| `read_note` | `src/tools/read-note.ts` | `{ path: string }` | JSON string `{ path, content, frontmatter? }` |
 
 ### Tool Error Codes
 
@@ -140,8 +144,12 @@ Tools allow the model to interact with the vault during chat. Tools are register
 14. Code blocks in assistant messages get copy-to-clipboard buttons.
 15. Switching providers in settings disconnects the current connection and re-initializes.
 16. Vault tools are only registered when `enableTools` is `true`.
-17. Tool `execute()` never throws — all errors are returned as structured `ToolResult` with `success: false`.
-18. `read_note` rejects paths containing `..` segments or absolute paths (path safety).
+17. When `enableTools = false` or no tools are registered, the dispatch loop is bypassed — behavior is identical to pre-tool code.
+18. When `enableTools = true`, the client dispatches tool_use requests to the ToolRegistry, appends tool_result to history, and re-invokes the provider until the model stops requesting tools.
+19. The tool dispatch loop errors out when depth exceeds `maxToolCallDepth` to prevent infinite loops.
+20. Tool calls are rendered as collapsed blocks in the chat showing name, args, status, and result preview.
+21. Tool `execute()` never throws — all errors are returned as `ToolResult` with `isError: true`.
+22. `read_note` rejects paths containing `..` segments or absolute paths (path safety).
 
 ## Behavioral Examples
 

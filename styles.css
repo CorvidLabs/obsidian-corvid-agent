@@ -337,6 +337,113 @@
 	min-width: 32px;
 }
 
+/* Tool call blocks */
+
+.corvid-tool-call {
+	align-self: flex-start;
+	width: 100%;
+	border-radius: var(--radius-s);
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	overflow: hidden;
+	font-size: 13px;
+}
+
+.corvid-tool-call-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 10px;
+	cursor: pointer;
+	user-select: none;
+}
+
+.corvid-tool-call-header:hover {
+	background: var(--background-modifier-hover);
+}
+
+.corvid-tool-call-status-icon {
+	font-size: 12px;
+	flex-shrink: 0;
+}
+
+.corvid-tool-call-name {
+	font-weight: 600;
+	font-family: var(--font-monospace);
+	flex: 1;
+}
+
+.corvid-tool-call-status {
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	opacity: 0.7;
+}
+
+.corvid-tool-call-status-pending {
+	color: var(--text-muted);
+}
+
+.corvid-tool-call-status-running {
+	color: var(--text-warning);
+}
+
+.corvid-tool-call-status-done {
+	color: var(--text-success);
+}
+
+.corvid-tool-call-status-error {
+	color: var(--text-error);
+}
+
+.corvid-tool-call-body {
+	padding: 0 10px 10px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.corvid-tool-call-collapsed {
+	display: none;
+}
+
+.corvid-tool-call-label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	margin-top: 8px;
+	margin-bottom: 4px;
+	color: var(--text-muted);
+}
+
+.corvid-tool-call-args {
+	margin: 0;
+	padding: 6px 8px;
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	overflow-x: auto;
+	font-size: 12px;
+}
+
+.corvid-tool-call-args code {
+	font-size: 12px;
+}
+
+.corvid-tool-call-result {
+	padding: 6px 8px;
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	white-space: pre-wrap;
+	word-break: break-word;
+	max-height: 200px;
+	overflow-y: auto;
+	font-size: 12px;
+}
+
+.corvid-tool-call-result-error {
+	color: var(--text-error);
+	background: var(--background-modifier-error);
+}
+
 /* Memory modals */
 
 .corvid-memory-key {

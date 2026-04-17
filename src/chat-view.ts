@@ -3,6 +3,7 @@ import type CorvidAgentPlugin from "./main";
 import type { ChatMessage, ConnectionState } from "./corvid-client";
 import type { SerializedChatMessage } from "./settings";
 import { PROVIDER_OPTIONS } from "./providers";
+import type { ToolCallRecord, ToolCallStatus } from "./tools/registry";
 
 export const CHAT_VIEW_TYPE = "corvid-agent-chat";
 
@@ -16,6 +17,7 @@ export class CorvidChatView extends ItemView {
 	private streamContent = "";
 	private streamRenderTimer: ReturnType<typeof setTimeout> | null = null;
 	private messages: ChatMessage[] = [];
+	private toolCallEls = new Map<string, HTMLElement>();
 
 	constructor(leaf: WorkspaceLeaf, plugin: CorvidAgentPlugin) {
 		super(leaf);
@@ -181,6 +183,78 @@ export class CorvidChatView extends ItemView {
 		const errEl = this.messagesEl.createDiv({ cls: "corvid-chat-message corvid-chat-error" });
 		errEl.setText(error);
 		this.scrollToBottom();
+	}
+
+	updateToolCall(record: ToolCallRecord): void {
+		const id = record.call.id;
+		let el = this.toolCallEls.get(id);
+
+		if (!el) {
+			// Create new tool call block (inserted before any streaming element)
+			el = this.messagesEl.createDiv({
+				cls: "corvid-tool-call",
+			});
+			this.toolCallEls.set(id, el);
+		}
+
+		// Clear and re-render
+		el.empty();
+		el.className = `corvid-tool-call corvid-tool-call-${record.status}`;
+
+		// Header — clickable to expand/collapse
+		const header = el.createDiv({ cls: "corvid-tool-call-header" });
+		const statusIcon = this.getToolStatusIcon(record.status);
+		header.createSpan({ text: statusIcon, cls: "corvid-tool-call-status-icon" });
+		header.createSpan({ text: record.call.name, cls: "corvid-tool-call-name" });
+		header.createSpan({
+			text: record.status,
+			cls: `corvid-tool-call-status corvid-tool-call-status-${record.status}`,
+		});
+
+		// Body — collapsed by default, toggle on header click
+		const body = el.createDiv({ cls: "corvid-tool-call-body corvid-tool-call-collapsed" });
+
+		header.addEventListener("click", () => {
+			body.toggleClass("corvid-tool-call-collapsed", !body.hasClass("corvid-tool-call-collapsed"));
+		});
+
+		// Args
+		const argsLabel = body.createDiv({ cls: "corvid-tool-call-label" });
+		argsLabel.setText("Arguments");
+		const argsBlock = body.createEl("pre", { cls: "corvid-tool-call-args" });
+		argsBlock.createEl("code", {
+			text: JSON.stringify(record.call.input, null, 2),
+		});
+
+		// Result (if available)
+		if (record.result) {
+			const resultLabel = body.createDiv({ cls: "corvid-tool-call-label" });
+			resultLabel.setText("Result");
+			const resultBlock = body.createDiv({
+				cls: `corvid-tool-call-result ${record.result.isError ? "corvid-tool-call-result-error" : ""}`,
+			});
+			// Show a preview (first 500 chars)
+			const preview =
+				record.result.content.length > 500
+					? record.result.content.slice(0, 500) + "..."
+					: record.result.content;
+			resultBlock.setText(preview);
+		}
+
+		this.scrollToBottom();
+	}
+
+	private getToolStatusIcon(status: ToolCallStatus): string {
+		switch (status) {
+			case "pending":
+				return "\u23F3"; // hourglass
+			case "running":
+				return "\u25B6"; // play
+			case "done":
+				return "\u2714"; // checkmark
+			case "error":
+				return "\u2718"; // cross
+		}
 	}
 
 	showLoading(): void {
