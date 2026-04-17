@@ -223,7 +223,7 @@ export class CorvidChatView extends ItemView {
 		argsLabel.setText("Arguments");
 		const argsBlock = body.createEl("pre", { cls: "corvid-tool-call-args" });
 		argsBlock.createEl("code", {
-			text: JSON.stringify(record.call.args, null, 2),
+			text: JSON.stringify(record.call.input, null, 2),
 		});
 
 		// Result (if available)

@@ -322,10 +322,15 @@ export class CorvidClient {
 
 			let pendingToolCall: ToolCall | null = null;
 
+			const lastContent = this.messageHistory[this.messageHistory.length - 1].content;
+			const contentStr = typeof lastContent === "string"
+				? lastContent
+				: lastContent.map((c) => c.type === "text" ? c.text : "").join("");
+
 			this.provider.sendMessage(
-				// Last user message is already in history — send empty string
+				// Last user message is already in history — send it as string
 				// and let history carry the context
-				this.messageHistory[this.messageHistory.length - 1].content,
+				contentStr,
 				this.messageHistory.slice(0, -1),
 				{
 					onToken: (text) => {
