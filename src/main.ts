@@ -7,10 +7,13 @@ import {
 import { CorvidClient } from "./corvid-client";
 import { CorvidChatView, CHAT_VIEW_TYPE } from "./chat-view";
 import { registerMemoryCommands } from "./memory-commands";
+import { ToolRegistry } from "./tools/registry";
+import { readNoteTool } from "./tools/read-note";
 
 export default class CorvidAgentPlugin extends Plugin {
 	settings: CorvidAgentSettings;
 	client: CorvidClient;
+	toolRegistry: ToolRegistry;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -109,6 +112,12 @@ export default class CorvidAgentPlugin extends Plugin {
 
 		// Memory commands (conditionally available based on provider)
 		registerMemoryCommands(this);
+
+		// Tool registry — register vault tools when enabled
+		this.toolRegistry = new ToolRegistry();
+		if (this.settings.enableTools) {
+			this.toolRegistry.register(readNoteTool);
+		}
 
 		// Settings tab
 		this.addSettingTab(new CorvidAgentSettingTab(this.app, this));
