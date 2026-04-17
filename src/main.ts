@@ -9,6 +9,7 @@ import { CorvidChatView, CHAT_VIEW_TYPE } from "./chat-view";
 import { registerMemoryCommands } from "./memory-commands";
 import { ToolRegistry } from "./tools/registry";
 import { readNoteTool } from "./tools/read-note";
+import { getNoteMetadataTool } from "./tools/get-note-metadata";
 
 export default class CorvidAgentPlugin extends Plugin {
 	settings: CorvidAgentSettings;
@@ -121,6 +122,7 @@ export default class CorvidAgentPlugin extends Plugin {
 		this.toolRegistry.setApp(this.app);
 		if (this.settings.enableTools) {
 			this.toolRegistry.register(readNoteTool);
+			this.toolRegistry.register(getNoteMetadataTool);
 		}
 
 		// Settings tab
