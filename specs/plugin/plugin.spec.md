@@ -9,6 +9,8 @@ files:
   - src/providers.ts
   - src/settings.ts
   - src/memory-commands.ts
+  - src/tools/registry.ts
+  - src/tools/read-note.ts
   - styles.css
   - manifest.json
 depends_on: []
@@ -33,6 +35,9 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `ProviderConfig` | `src/providers.ts` | Provider configuration shape |
 | `StreamCallbacks` | `src/providers.ts` | Callbacks for streaming responses (onToken, onComplete, onError) |
 | `ChatHistoryMessage` | `src/providers.ts` | Role-based message for multi-turn context |
+| `Tool` | `src/tools/registry.ts` | Vault tool interface (name, description, inputSchema, execute) |
+| `ToolInputSchema` | `src/tools/registry.ts` | JSON Schema subset for tool input parameters |
+| `ToolResult` | `src/tools/registry.ts` | Discriminated union: success with data or error with code |
 | `ChatMessage` | `src/corvid-client.ts` | Runtime chat message with Date timestamp |
 | `StreamEvent` | `src/corvid-client.ts` | WebSocket stream event shape for real-time responses |
 | `ConnectionState` | `src/corvid-client.ts` | Union: `"disconnected" \| "connecting" \| "connected" \| "authenticated"` |
@@ -48,6 +53,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `OllamaProvider` | `src/providers.ts` | Ollama chat API with streaming |
 | `ClaudeProvider` | `src/providers.ts` | Anthropic Messages API with SSE streaming |
 | `OpenAIProvider` | `src/providers.ts` | OpenAI Chat Completions API with SSE streaming |
+| `ToolRegistry` | `src/tools/registry.ts` | Tool registration and dispatch |
 | `CorvidAgentSettingTab` | `src/settings.ts` | Settings tab with dynamic fields per provider |
 
 ### Exported Constants
@@ -57,6 +63,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `CHAT_VIEW_TYPE` | `src/chat-view.ts` | View type identifier: `"corvid-agent-chat"` |
 | `PROVIDER_OPTIONS` | `src/providers.ts` | Provider metadata array (defaults, URLs, models, API key requirements) |
 | `DEFAULT_SETTINGS` | `src/settings.ts` | Default plugin settings object |
+| `readNoteTool` | `src/tools/read-note.ts` | `read_note` tool instance — reads vault notes by path |
 
 ### Exported Functions
 
@@ -91,6 +98,25 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `defaultProject` | string | `""` | corvid-agent | Project ID |
 | `includeVaultContext` | boolean | `false` | All | Prepend active note |
 | `maxContextLength` | number | `8000` | All | Max context chars |
+| `enableTools` | boolean | `false` | All | Enable vault tools (read_note, etc.) |
+
+## Vault Tools
+
+Tools allow the model to interact with the vault during chat. Tools are registered via `ToolRegistry` and dispatched by name.
+
+### Registered Tools
+
+| Tool | File | Input | Output |
+|------|------|-------|--------|
+| `read_note` | `src/tools/read-note.ts` | `{ path: string }` | `{ path, content, frontmatter? }` or `{ error, code }` |
+
+### Tool Error Codes
+
+| Code | Meaning |
+|------|---------|
+| `invalid_path` | Path is empty, absolute, or contains `..` traversal |
+| `not_found` | No file exists at the given vault path |
+| `unknown_tool` | Registry has no tool with that name |
 
 ## Invariants
 
@@ -109,6 +135,9 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 13. Mobile layout uses 44px minimum touch targets (Apple HIG compliance).
 14. Code blocks in assistant messages get copy-to-clipboard buttons.
 15. Switching providers in settings disconnects the current connection and re-initializes.
+16. Vault tools are only registered when `enableTools` is `true`.
+17. Tool `execute()` never throws — all errors are returned as structured `ToolResult` with `success: false`.
+18. `read_note` rejects paths containing `..` segments or absolute paths (path safety).
 
 ## Behavioral Examples
 

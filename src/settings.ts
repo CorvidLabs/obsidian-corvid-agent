@@ -26,6 +26,9 @@ export interface CorvidAgentSettings {
 	includeVaultContext: boolean;
 	maxContextLength: number;
 
+	// ─── Tools ───────────────────────────────────────────
+	enableTools: boolean;
+
 	// ─── Persisted state ─────────────────────────────────
 	chatHistory: SerializedChatMessage[];
 }
@@ -40,6 +43,7 @@ export const DEFAULT_SETTINGS: CorvidAgentSettings = {
 	defaultProject: "",
 	includeVaultContext: false,
 	maxContextLength: 8000,
+	enableTools: false,
 	chatHistory: [],
 };
 
@@ -203,6 +207,23 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.includeVaultContext)
 					.onChange(async (value) => {
 						this.plugin.settings.includeVaultContext = value;
+						await this.plugin.saveSettings();
+					}),
+			);
+
+		// ─── Tools ───────────────────────────────────────────
+		containerEl.createEl("h2", { text: "Tools" });
+
+		new Setting(containerEl)
+			.setName("Enable vault tools")
+			.setDesc(
+				"Allow the model to call vault tools (e.g. read_note) during chat",
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.enableTools)
+					.onChange(async (value) => {
+						this.plugin.settings.enableTools = value;
 						await this.plugin.saveSettings();
 					}),
 			);
