@@ -8,12 +8,35 @@
 }
 
 .corvid-chat-status {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 	padding: 4px 12px;
 	font-size: 11px;
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.corvid-status-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.corvid-status-green {
+	background: var(--text-success);
+}
+
+.corvid-status-yellow {
+	background: var(--text-warning);
+}
+
+.corvid-status-red {
+	background: var(--text-error);
 }
 
 .corvid-chat-toolbar {
@@ -42,6 +65,7 @@
 }
 
 .corvid-chat-message {
+	position: relative;
 	border-radius: var(--radius-m);
 	padding: 8px 12px;
 	max-width: 95%;
@@ -149,6 +173,34 @@
 
 .corvid-code-copy-success {
 	color: var(--text-success);
+}
+
+/* Full message copy button */
+
+.corvid-message-copy-btn {
+	position: absolute;
+	bottom: 4px;
+	right: 4px;
+	padding: 4px;
+	min-height: 24px;
+	min-width: 24px;
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.corvid-chat-message:hover .corvid-message-copy-btn {
+	opacity: 1;
+}
+
+.corvid-message-copy-btn:hover {
+	background: var(--background-modifier-hover);
 }
 
 /* Loading / typing indicator */
@@ -277,6 +329,12 @@
 	opacity: 1; /* Always visible on touch — no hover */
 	min-height: 36px;
 	min-width: 36px;
+}
+
+.is-mobile .corvid-message-copy-btn {
+	opacity: 1;
+	min-height: 32px;
+	min-width: 32px;
 }
 
 /* Memory modals */
