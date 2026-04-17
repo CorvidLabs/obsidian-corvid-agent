@@ -41,18 +41,15 @@ export const readNoteTool: Tool = {
 
 		if (typeof path !== "string" || !path.trim()) {
 			return {
-				success: false,
-				error: "path is required and must be a non-empty string",
-				code: "invalid_path",
+				content: "path is required and must be a non-empty string",
+				isError: true,
 			};
 		}
 
 		if (!isValidVaultPath(path)) {
 			return {
-				success: false,
-				error:
-					"Invalid path: must be vault-relative with no '..' traversal or absolute paths",
-				code: "invalid_path",
+				content: "Invalid path: must be vault-relative with no '..' traversal or absolute paths",
+				isError: true,
 			};
 		}
 
@@ -60,29 +57,27 @@ export const readNoteTool: Tool = {
 
 		if (!abstractFile) {
 			return {
-				success: false,
-				error: `Note not found: ${path}`,
-				code: "not_found",
+				content: `Note not found: ${path}`,
+				isError: true,
 			};
 		}
 
 		if (!(abstractFile instanceof TFile)) {
 			return {
-				success: false,
-				error: `Path is a folder, not a file: ${path}`,
-				code: "not_found",
+				content: `Path is a folder, not a file: ${path}`,
+				isError: true,
 			};
 		}
 
-		const content = await app.vault.read(abstractFile);
+		const noteContent = await app.vault.read(abstractFile);
 		const cache = app.metadataCache.getFileCache(abstractFile);
 		const frontmatter = cache?.frontmatter ?? undefined;
 
-		const data: Record<string, unknown> = { path, content };
+		const result: Record<string, unknown> = { path, content: noteContent };
 		if (frontmatter) {
-			data.frontmatter = frontmatter;
+			result.frontmatter = frontmatter;
 		}
 
-		return { success: true, data };
+		return { content: JSON.stringify(result) };
 	},
 };

@@ -1,44 +1,55 @@
+/**
+ * Provider-agnostic tool registry for vault tools.
+ * Tools register here; the dispatch loop in corvid-client resolves them.
+ */
 import type { App } from "obsidian";
 
-/**
- * Schema for a tool's input parameters (JSON Schema subset).
- */
 export interface ToolInputSchema {
 	type: "object";
 	properties: Record<string, { type: string; description?: string }>;
 	required?: string[];
 }
 
-/**
- * Result returned by a tool execution.
- * Tools return structured data — never throw.
- */
-export type ToolResult =
-	| { success: true; data: Record<string, unknown> }
-	| { success: false; error: string; code: string };
-
-/**
- * A vault tool that can be invoked by the model.
- */
 export interface Tool {
-	readonly name: string;
-	readonly description: string;
-	readonly inputSchema: ToolInputSchema;
+	name: string;
+	description: string;
+	inputSchema: ToolInputSchema;
 	execute(args: Record<string, unknown>, app: App): Promise<ToolResult>;
 }
 
-/**
- * Registry for vault tools. Tools register at plugin load
- * and are dispatched by name during the tool-use loop.
- */
+export interface ToolResult {
+	content: string;
+	isError?: boolean;
+}
+
+export interface ToolCall {
+	id: string;
+	name: string;
+	input: Record<string, unknown>;
+}
+
+export type ToolCallStatus = "pending" | "running" | "done" | "error";
+
+export interface ToolCallRecord {
+	call: ToolCall;
+	status: ToolCallStatus;
+	result?: ToolResult;
+}
+
 export class ToolRegistry {
 	private tools = new Map<string, Tool>();
+	private app: App | null = null;
+
+	setApp(app: App): void {
+		this.app = app;
+	}
 
 	register(tool: Tool): void {
-		if (this.tools.has(tool.name)) {
-			throw new Error(`Tool "${tool.name}" is already registered`);
-		}
 		this.tools.set(tool.name, tool);
+	}
+
+	unregister(name: string): void {
+		this.tools.delete(name);
 	}
 
 	get(name: string): Tool | undefined {
@@ -53,15 +64,29 @@ export class ToolRegistry {
 		return Array.from(this.tools.values());
 	}
 
-	async execute(
-		name: string,
-		args: Record<string, unknown>,
-		app: App,
-	): Promise<ToolResult> {
-		const tool = this.tools.get(name);
+	getSchemas(): { name: string; description: string; input_schema: ToolInputSchema }[] {
+		return this.list().map((t) => ({
+			name: t.name,
+			description: t.description,
+			input_schema: t.inputSchema,
+		}));
+	}
+
+	async execute(call: ToolCall): Promise<ToolResult> {
+		const tool = this.tools.get(call.name);
 		if (!tool) {
-			return { success: false, error: `Unknown tool: ${name}`, code: "unknown_tool" };
+			return { content: `Unknown tool: ${call.name}`, isError: true };
 		}
-		return tool.execute(args, app);
+		if (!this.app) {
+			return { content: "App not available for tool execution", isError: true };
+		}
+		try {
+			return await tool.execute(call.input, this.app);
+		} catch (err) {
+			return {
+				content: err instanceof Error ? err.message : String(err),
+				isError: true,
+			};
+		}
 	}
 }

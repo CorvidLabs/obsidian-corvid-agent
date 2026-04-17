@@ -28,6 +28,7 @@ export interface CorvidAgentSettings {
 
 	// ─── Tools ───────────────────────────────────────────
 	enableTools: boolean;
+	maxToolCallDepth: number;
 
 	// ─── Persisted state ─────────────────────────────────
 	chatHistory: SerializedChatMessage[];
@@ -44,6 +45,7 @@ export const DEFAULT_SETTINGS: CorvidAgentSettings = {
 	includeVaultContext: false,
 	maxContextLength: 8000,
 	enableTools: false,
+	maxToolCallDepth: 10,
 	chatHistory: [],
 };
 
@@ -243,6 +245,41 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 						const num = parseInt(value, 10);
 						if (!isNaN(num) && num > 0) {
 							this.plugin.settings.maxContextLength = num;
+							await this.plugin.saveSettings();
+						}
+					}),
+			);
+
+		// ─── Tools ───────────────────────────────────────────
+		containerEl.createEl("h2", { text: "Tools" });
+
+		new Setting(containerEl)
+			.setName("Enable tools")
+			.setDesc(
+				"Allow the model to call registered vault tools during a conversation",
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.enableTools)
+					.onChange(async (value) => {
+						this.plugin.settings.enableTools = value;
+						await this.plugin.saveSettings();
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Max tool call depth")
+			.setDesc(
+				"Maximum number of consecutive tool calls before forcing a text response (prevents infinite loops)",
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("10")
+					.setValue(String(this.plugin.settings.maxToolCallDepth))
+					.onChange(async (value) => {
+						const num = parseInt(value, 10);
+						if (!isNaN(num) && num > 0) {
+							this.plugin.settings.maxToolCallDepth = num;
 							await this.plugin.saveSettings();
 						}
 					}),
