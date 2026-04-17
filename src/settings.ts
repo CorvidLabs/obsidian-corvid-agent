@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, DropdownComponent, PluginSettingTab, Setting } from "obsidian";
 import type CorvidAgentPlugin from "./main";
 import { type ProviderType, PROVIDER_OPTIONS } from "./providers";
 
@@ -136,18 +136,22 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 
 		// ─── Model (for direct API providers) ────────────────
 		if (this.plugin.settings.provider !== "corvid-agent") {
-			new Setting(containerEl)
-				.setName("Model")
-				.setDesc(this.getModelDescription())
-				.addText((text) =>
-					text
-						.setPlaceholder(currentOpt?.defaultModel ?? "")
-						.setValue(this.plugin.settings.model)
-						.onChange(async (value) => {
-							this.plugin.settings.model = value;
-							await this.plugin.saveSettings();
-						}),
-				);
+			if (this.plugin.settings.provider === "ollama") {
+				this.renderOllamaModelDropdown(containerEl);
+			} else {
+				new Setting(containerEl)
+					.setName("Model")
+					.setDesc(this.getModelDescription())
+					.addText((text) =>
+						text
+							.setPlaceholder(currentOpt?.defaultModel ?? "")
+							.setValue(this.plugin.settings.model)
+							.onChange(async (value) => {
+								this.plugin.settings.model = value;
+								await this.plugin.saveSettings();
+							}),
+					);
+			}
 
 			new Setting(containerEl)
 				.setName("System prompt")
@@ -243,6 +247,79 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 						}
 					}),
 			);
+	}
+
+	private renderOllamaModelDropdown(containerEl: HTMLElement): void {
+		const setting = new Setting(containerEl)
+			.setName("Model")
+			.setDesc(this.getModelDescription());
+
+		let dropdownRef: DropdownComponent | null = null;
+		setting.addDropdown((dropdown) => {
+			dropdownRef = dropdown;
+			const current = this.plugin.settings.model;
+			if (current) dropdown.addOption(current, current);
+			dropdown.addOption("__loading__", "Loading models…");
+			dropdown.setValue(current || "__loading__");
+			dropdown.onChange(async (value) => {
+				if (value === "__loading__" || value === "__error__") return;
+				this.plugin.settings.model = value;
+				await this.plugin.saveSettings();
+			});
+		});
+
+		setting.addExtraButton((btn) =>
+			btn
+				.setIcon("refresh-cw")
+				.setTooltip("Refresh model list")
+				.onClick(() => {
+					if (dropdownRef) void this.populateOllamaModels(dropdownRef);
+				}),
+		);
+
+		if (dropdownRef) void this.populateOllamaModels(dropdownRef);
+	}
+
+	private async populateOllamaModels(
+		dropdown: DropdownComponent,
+	): Promise<void> {
+		const base = this.plugin.settings.serverUrl || "http://localhost:11434";
+		const url = `${base.replace(/\/$/, "")}/api/tags`;
+		try {
+			const response = await fetch(url);
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			const data = (await response.json()) as {
+				models?: { name: string }[];
+			};
+			const models = (data.models ?? [])
+				.map((m) => m.name)
+				.sort((a, b) => a.localeCompare(b));
+
+			dropdown.selectEl.empty();
+			if (models.length === 0) {
+				dropdown.addOption("__error__", "No models installed");
+				dropdown.setValue("__error__");
+				return;
+			}
+
+			for (const name of models) dropdown.addOption(name, name);
+
+			const current = this.plugin.settings.model;
+			if (current && models.includes(current)) {
+				dropdown.setValue(current);
+			} else {
+				dropdown.setValue(models[0]);
+				this.plugin.settings.model = models[0];
+				await this.plugin.saveSettings();
+			}
+		} catch (err) {
+			dropdown.selectEl.empty();
+			dropdown.addOption(
+				"__error__",
+				`Failed: ${(err as Error).message}`,
+			);
+			dropdown.setValue("__error__");
+		}
 	}
 
 	private getUrlDescription(): string {
