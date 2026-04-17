@@ -33,11 +33,15 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `ProviderType` | `src/providers.ts` | Union: `"corvid-agent" \| "ollama" \| "claude" \| "openai"` |
 | `Provider` | `src/providers.ts` | Abstract provider interface |
 | `ProviderConfig` | `src/providers.ts` | Provider configuration shape |
-| `StreamCallbacks` | `src/providers.ts` | Callbacks for streaming responses (onToken, onComplete, onError) |
+| `StreamCallbacks` | `src/providers.ts` | Callbacks for streaming responses (onToken, onComplete, onError, onToolCall) |
 | `ChatHistoryMessage` | `src/providers.ts` | Role-based message for multi-turn context |
 | `Tool` | `src/tools/registry.ts` | Vault tool interface (name, description, inputSchema, execute) |
 | `ToolInputSchema` | `src/tools/registry.ts` | JSON Schema subset for tool input parameters |
-| `ToolResult` | `src/tools/registry.ts` | Discriminated union: success with data or error with code |
+| `ToolResult` | `src/tools/registry.ts` | Discriminated union: success with data or error with code (vault tools) |
+| `ToolDefinition` | `src/providers.ts` | Tool schema for providers (name, description, input_schema) |
+| `ToolCall` | `src/providers.ts` | Emitted when model invokes a tool (id, name, input) |
+| `ToolResult` | `src/providers.ts` | Result returned to model after tool execution (provider layer) |
+| `MessageContent` | `src/providers.ts` | Union of text, tool_use, and tool_result content blocks |
 | `ChatMessage` | `src/corvid-client.ts` | Runtime chat message with Date timestamp |
 | `StreamEvent` | `src/corvid-client.ts` | WebSocket stream event shape for real-time responses |
 | `ConnectionState` | `src/corvid-client.ts` | Union: `"disconnected" \| "connecting" \| "connected" \| "authenticated"` |
@@ -51,7 +55,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `CorvidChatView` | `src/chat-view.ts` | ItemView sidebar with chat UI |
 | `CorvidClient` | `src/corvid-client.ts` | Unified client — delegates to WebSocket (corvid-agent) or Provider (direct API) |
 | `OllamaProvider` | `src/providers.ts` | Ollama chat API with streaming |
-| `ClaudeProvider` | `src/providers.ts` | Anthropic Messages API with SSE streaming |
+| `ClaudeProvider` | `src/providers.ts` | Anthropic Messages API with SSE streaming and tool_use support |
 | `OpenAIProvider` | `src/providers.ts` | OpenAI Chat Completions API with SSE streaming |
 | `ToolRegistry` | `src/tools/registry.ts` | Tool registration and dispatch |
 | `CorvidAgentSettingTab` | `src/settings.ts` | Settings tab with dynamic fields per provider |
@@ -159,6 +163,15 @@ Tools allow the model to interact with the vault during chat. Tools are register
 - **And** `message_stop` event finalizes the response
 - **And** full response is added to message history for multi-turn context
 
+### Scenario: Claude tool_use round-trip
+
+- **Given** provider is "claude" with valid API key and tools registered
+- **When** model responds with `stop_reason: "tool_use"` containing a `tool_use` content block
+- **Then** `onToolCall` callback is invoked with the tool's id, name, and parsed input
+- **And** partial JSON from `input_json_delta` events is accumulated before parsing
+- **And** the caller can continue the conversation via `continueWithToolResult()` with the tool result
+- **And** the loop continues until `stop_reason` is not `"tool_use"`
+
 ### Scenario: Switching provider mid-conversation
 
 - **Given** user has an active chat with Ollama
@@ -217,3 +230,4 @@ Tools allow the model to interact with the vault during chat. Tools are register
 |------|--------|--------|
 | 2026-04-15 | corvid-agent | Initial spec — v0.1.0 with corvid-agent only |
 | 2026-04-15 | corvid-agent | v0.2.0 — Multi-backend support (Ollama, Claude, OpenAI), spec-sync integration |
+| 2026-04-16 | corvid-agent | v0.3.0 — ClaudeProvider tool_use/tool_result support (#13) |
