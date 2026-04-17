@@ -1,15 +1,15 @@
 {
   "hashes": {
-    "specs/plugin/requirements.md": "57a3c8283d89e874fa2eec112bc01481da03a18794ee82d7253c688bbe0426f9",
-    "src/chat-view.ts": "77b53856fb9dd5ff7b6db17e72618035f43a3e7538cddcabcbd5914e0d62ea4c",
-    "styles.css": "1fb2408ec3db529674a6edbd741af605b4856920813726ad5f2e66aecf62898d",
-    "specs/plugin/design.md": "fcf4df8c3622bb7df4535c3cafbb6d2317cc08c7e7b2f327fbeb341ba83c8ee5",
-    "src/settings.ts": "302344647c734e888ad23d0dae1823c3076b844670b89ce6e4ff3ad61af19c3f",
-    "src/providers.ts": "47e9c456bfe55e2fb3e0c0f33e0f3d94f624378a5fc608161342b58472863f64",
-    "specs/plugin/plugin.spec.md": "868c388586f10978e297a109dbe2a06ff8eb3f13a29f91e11a4dec8a1fdcf235",
-    "src/memory-commands.ts": "6408e5b33940524f4928ae0494301f4b60e4ab07b92042ba1624780c4ec21c7c",
-    "src/corvid-client.ts": "70a99598a2a328bc4635da301ddc478289ac6c392337761aecd03d82451af376",
     "src/main.ts": "81b0fa94a510d413e9192cfa657399d2d0ce73cc742923ef45091d87946fec60",
-    "manifest.json": "9999c3e98c495f8fc2006f5a3704bdf4071deec9dbdb0808797fb3329e15dd04"
+    "manifest.json": "9999c3e98c495f8fc2006f5a3704bdf4071deec9dbdb0808797fb3329e15dd04",
+    "src/corvid-client.ts": "70a99598a2a328bc4635da301ddc478289ac6c392337761aecd03d82451af376",
+    "specs/plugin/design.md": "fcf4df8c3622bb7df4535c3cafbb6d2317cc08c7e7b2f327fbeb341ba83c8ee5",
+    "src/providers.ts": "47e9c456bfe55e2fb3e0c0f33e0f3d94f624378a5fc608161342b58472863f64",
+    "src/settings.ts": "302344647c734e888ad23d0dae1823c3076b844670b89ce6e4ff3ad61af19c3f",
+    "specs/plugin/plugin.spec.md": "868c388586f10978e297a109dbe2a06ff8eb3f13a29f91e11a4dec8a1fdcf235",
+    "styles.css": "e8cbe72d4b9c9bc954c09a5a0bb479fcb74a31e229d51e33c50f7b1943829be1",
+    "specs/plugin/requirements.md": "57a3c8283d89e874fa2eec112bc01481da03a18794ee82d7253c688bbe0426f9",
+    "src/chat-view.ts": "edd3341bc94225213235346139149aed292188be292f413cedf5686f009f358a",
+    "src/memory-commands.ts": "6408e5b33940524f4928ae0494301f4b60e4ab07b92042ba1624780c4ec21c7c"
   }
 }

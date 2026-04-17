@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "node esbuild.config.mjs production",
+		"test": "echo 'No unit tests for Obsidian plugin'",
 		"spec:check": "bash scripts/specsync.sh check",
 		"spec:check:strict": "bash scripts/specsync.sh check --strict",
 		"spec:coverage": "bash scripts/specsync.sh coverage",
