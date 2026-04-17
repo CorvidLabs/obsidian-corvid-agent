@@ -11,6 +11,7 @@ files:
   - src/memory-commands.ts
   - src/tools/registry.ts
   - src/tools/read-note.ts
+  - src/tools/get-note-metadata.ts
   - styles.css
   - manifest.json
 depends_on: []
@@ -71,6 +72,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `PROVIDER_OPTIONS` | `src/providers.ts` | Provider metadata array (defaults, URLs, models, API key requirements) |
 | `DEFAULT_SETTINGS` | `src/settings.ts` | Default plugin settings object |
 | `readNoteTool` | `src/tools/read-note.ts` | `read_note` tool instance — reads vault notes by path |
+| `getNoteMetadataTool` | `src/tools/get-note-metadata.ts` | `get_note_metadata` tool instance — returns note metadata without reading body |
 
 ### Exported Functions
 
@@ -117,6 +119,7 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | Tool | File | Input | Output |
 |------|------|-------|--------|
 | `read_note` | `src/tools/read-note.ts` | `{ path: string }` | JSON string `{ path, content, frontmatter? }` |
+| `get_note_metadata` | `src/tools/get-note-metadata.ts` | `{ path: string }` | JSON string `{ path, frontmatter?, tags, headings, backlinks, outgoingLinks }` |
 
 ### Tool Error Codes
 
@@ -150,6 +153,8 @@ Tools allow the model to interact with the vault during chat. Tools are register
 20. Tool calls are rendered as collapsed blocks in the chat showing name, args, status, and result preview.
 21. Tool `execute()` never throws — all errors are returned as `ToolResult` with `isError: true`.
 22. `read_note` rejects paths containing `..` segments or absolute paths (path safety).
+23. `get_note_metadata` returns structured metadata (frontmatter, tags, headings, backlinks, outgoing links) without reading the file body — only touches the metadata cache.
+24. `get_note_metadata` rejects paths containing `..` segments or absolute paths (same path safety as `read_note`).
 
 ## Behavioral Examples
 
