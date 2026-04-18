@@ -21,6 +21,6 @@
 		"typescript": "^5.7.0"
 	},
 	"dependencies": {
-		"@corvidlabs/ts-algochat": "/Users/corvid-agent/ts-algochat"
+		"@corvidlabs/ts-algochat": "^0.4.0"
 	}
 }
