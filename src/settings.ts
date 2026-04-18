@@ -1,7 +1,7 @@
 import { App, DropdownComponent, Modal, Notice, PluginSettingTab, Setting } from "obsidian";
 import type CorvidAgentPlugin from "./main";
 import { type ProviderType, PROVIDER_OPTIONS } from "./providers";
-import { createRandomChatAccount, validateMnemonic, type AlgoNetwork } from "./algochat-provider";
+import { AlgoChatProvider, createRandomChatAccount, validateMnemonic, type AlgoNetwork } from "./algochat-provider";
 import { createChatAccountFromMnemonic } from "@corvidlabs/ts-algochat";
 
 export interface SerializedChatMessage {
@@ -334,17 +334,31 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 				);
 		}
 
-		// Mnemonic
+		// Mnemonic — masked input with show/hide toggle
+		let mnemonicInput: HTMLInputElement | null = null;
+		let showingMnemonic = false;
+
 		new Setting(containerEl)
 			.setName("Mnemonic")
-			.setDesc("25-word Algorand mnemonic phrase for your chat wallet")
-			.addTextArea((ta) => {
-				ta.setPlaceholder("word1 word2 word3 ... word25");
-				ta.setValue(this.plugin.settings.algoMnemonic);
-				ta.inputEl.rows = 3;
-				ta.onChange(async (v) => {
+			.setDesc("25-word Algorand mnemonic phrase. Hidden by default — click the eye icon to reveal.")
+			.addText((text) => {
+				text.inputEl.type = "password";
+				text.inputEl.style.fontFamily = "var(--font-monospace)";
+				text.inputEl.style.width = "100%";
+				mnemonicInput = text.inputEl;
+				text.setPlaceholder("word1 word2 ... word25");
+				text.setValue(this.plugin.settings.algoMnemonic);
+				text.onChange(async (v) => {
 					this.plugin.settings.algoMnemonic = v.trim();
 					await this.plugin.saveSettings();
+				});
+			})
+			.addExtraButton((btn) => {
+				btn.setIcon("eye").setTooltip("Show / hide mnemonic");
+				btn.onClick(() => {
+					showingMnemonic = !showingMnemonic;
+					if (mnemonicInput) mnemonicInput.type = showingMnemonic ? "text" : "password";
+					btn.setIcon(showingMnemonic ? "eye-off" : "eye");
 				});
 			});
 
@@ -384,6 +398,35 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 				// ignore
 			}
 		}
+
+		// Publish encryption key on-chain
+		new Setting(containerEl)
+			.setName("Publish encryption key")
+			.setDesc(
+				"Announce your X25519 key on-chain so others can discover it and send encrypted messages to you. " +
+				"Required to receive messages. Costs ~0.001 ALGO.",
+			)
+			.addButton((btn) => {
+				btn.setButtonText("Publish key").onClick(async () => {
+					const provider = this.plugin.client.activeProvider;
+					if (!(provider instanceof AlgoChatProvider)) {
+						new Notice("AlgoChat not initialized — check your mnemonic");
+						return;
+					}
+					btn.setButtonText("Publishing…").setDisabled(true);
+					try {
+						const txid = await provider.publishKey();
+						new Notice(`Encryption key published! Tx: ${txid.slice(0, 12)}…`, 8000);
+					} catch (err) {
+						new Notice(
+							`Publish failed: ${err instanceof Error ? err.message : String(err)}`,
+							8000,
+						);
+					} finally {
+						btn.setButtonText("Publish key").setDisabled(false);
+					}
+				});
+			});
 
 		// Target address
 		containerEl.createEl("h2", { text: "AlgoChat Recipient" });

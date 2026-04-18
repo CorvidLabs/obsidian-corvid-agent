@@ -222,6 +222,18 @@ export class AlgoChatProvider implements Provider {
 			return null;
 		}
 	}
+
+	/**
+	 * Publish this wallet's X25519 encryption key on-chain.
+	 * Required so other AlgoChat users can discover and send encrypted messages to this address.
+	 * Returns the transaction ID.
+	 */
+	async publishKey(): Promise<string> {
+		if (!this.service || !this.chatAccount) {
+			throw new Error("Wallet not initialized. Check your mnemonic.");
+		}
+		return this.service.publishKey(this.chatAccount);
+	}
 }
 
 // ─── Wallet helpers (used in settings UI) ────────────────────────
