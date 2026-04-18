@@ -12,6 +12,7 @@ files:
   - src/tools/registry.ts
   - src/tools/read-note.ts
   - src/tools/get-note-metadata.ts
+  - src/tools/recall-memory.ts
   - styles.css
   - manifest.json
 depends_on: []
@@ -73,6 +74,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `DEFAULT_SETTINGS` | `src/settings.ts` | Default plugin settings object |
 | `readNoteTool` | `src/tools/read-note.ts` | `read_note` tool instance — reads vault notes by path |
 | `getNoteMetadataTool` | `src/tools/get-note-metadata.ts` | `get_note_metadata` tool instance — returns note metadata without reading body |
+| `createRecallMemoryTool` | `src/tools/recall-memory.ts` | Factory for `recall_memory` tool — only registered when provider is `corvid-agent` |
 
 ### Exported Functions
 
@@ -120,6 +122,7 @@ Tools allow the model to interact with the vault during chat. Tools are register
 |------|------|-------|--------|
 | `read_note` | `src/tools/read-note.ts` | `{ path: string }` | JSON string `{ path, content, frontmatter? }` |
 | `get_note_metadata` | `src/tools/get-note-metadata.ts` | `{ path: string }` | JSON string `{ path, frontmatter?, tags, headings, backlinks, outgoingLinks }` |
+| `recall_memory` | `src/tools/recall-memory.ts` | `{ key?: string, query?: string }` | JSON string `{ results }` — corvid-agent only |
 
 ### Tool Error Codes
 
@@ -155,6 +158,8 @@ Tools allow the model to interact with the vault during chat. Tools are register
 22. `read_note` rejects paths containing `..` segments or absolute paths (path safety).
 23. `get_note_metadata` returns structured metadata (frontmatter, tags, headings, backlinks, outgoing links) without reading the file body — only touches the metadata cache.
 24. `get_note_metadata` rejects paths containing `..` segments or absolute paths (same path safety as `read_note`).
+25. `recall_memory` requires at least one of `key` or `query` — returns an error result if both are absent.
+26. `recall_memory` is only registered when `settings.provider === "corvid-agent"`.
 
 ## Behavioral Examples
 
