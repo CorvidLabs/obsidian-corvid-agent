@@ -1,7 +1,7 @@
 {
 	"id": "corvid-agent",
 	"name": "Corvid Agent",
-	"version": "0.3.0",
+	"version": "0.1.0",
 	"minAppVersion": "1.5.0",
 	"description": "AI chat for Obsidian — connect to Ollama, Claude, OpenAI, or a corvid-agent instance. Vault context injection, memory sync, and work tasks.",
 	"author": "CorvidLabs",
