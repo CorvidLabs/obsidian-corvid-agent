@@ -111,6 +111,8 @@ export class CorvidClient {
 	private provider: Provider | null = null;
 	/** Message history for direct API providers */
 	private messageHistory: ChatHistoryMessage[] = [];
+	/** Runtime-only decrypted mnemonic — never persisted */
+	private unlockedMnemonic: string | null = null;
 
 	/** Tool registry — shared across providers */
 	readonly toolRegistry = new ToolRegistry();
@@ -126,7 +128,7 @@ export class CorvidClient {
 			this.provider = null;
 		} else if (this.settings.provider === "algochat") {
 			this.provider = new AlgoChatProvider(this.getProviderConfig(), {
-				mnemonic: this.settings.algoMnemonic,
+				mnemonic: this.unlockedMnemonic ?? this.settings.algoMnemonic,
 				network: this.settings.algoNetwork,
 				targetAddress: this.settings.algoTargetAddress,
 				localnetUrl: this.settings.algoLocalnetUrl,
@@ -156,6 +158,18 @@ export class CorvidClient {
 		return this.provider;
 	}
 
+	setUnlockedMnemonic(mnemonic: string | null): void {
+		this.unlockedMnemonic = mnemonic;
+		if (this.provider instanceof AlgoChatProvider) {
+			this.provider.updateAlgoConfig({
+				mnemonic: mnemonic ?? this.settings.algoMnemonic,
+				network: this.settings.algoNetwork,
+				targetAddress: this.settings.algoTargetAddress,
+				localnetUrl: this.settings.algoLocalnetUrl,
+			});
+		}
+	}
+
 	updateSettings(settings: CorvidAgentSettings): void {
 		const providerChanged = this.settings.provider !== settings.provider;
 		this.settings = settings;
@@ -165,7 +179,7 @@ export class CorvidClient {
 			this.initProvider();
 		} else if (this.provider instanceof AlgoChatProvider) {
 			this.provider.updateAlgoConfig({
-				mnemonic: settings.algoMnemonic,
+				mnemonic: this.unlockedMnemonic ?? settings.algoMnemonic,
 				network: settings.algoNetwork,
 				targetAddress: settings.algoTargetAddress,
 				localnetUrl: settings.algoLocalnetUrl,

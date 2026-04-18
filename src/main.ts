@@ -1,9 +1,10 @@
-import { Plugin, Notice } from "obsidian";
+import { App, Modal, Plugin, Notice, Setting } from "obsidian";
 import {
 	type CorvidAgentSettings,
 	DEFAULT_SETTINGS,
 	CorvidAgentSettingTab,
 } from "./settings";
+import { decryptMnemonic } from "./mnemonic-crypto";
 import { CorvidClient } from "./corvid-client";
 import { CorvidChatView, CHAT_VIEW_TYPE } from "./chat-view";
 import { registerMemoryCommands } from "./memory-commands";
@@ -18,6 +19,8 @@ export default class CorvidAgentPlugin extends Plugin {
 	settings: CorvidAgentSettings;
 	client: CorvidClient;
 	toolRegistry: ToolRegistry;
+	/** Runtime-only decrypted mnemonic — never written to disk */
+	unlockedMnemonic: string | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -135,10 +138,48 @@ export default class CorvidAgentPlugin extends Plugin {
 
 		// Settings tab
 		this.addSettingTab(new CorvidAgentSettingTab(this.app, this));
+
+		// Unlock wallet on startup if encrypted mnemonic is stored
+		this.app.workspace.onLayoutReady(() => this.promptUnlockOnStartup());
+	}
+
+	private promptUnlockOnStartup(): void {
+		const { algoMnemonicEncrypted, algoMnemonic, provider } = this.settings;
+
+		if (provider !== "algochat") return;
+
+		if (algoMnemonicEncrypted) {
+			const encrypted = algoMnemonicEncrypted;
+			new WalletUnlockModal(this.app, async (password) => {
+				try {
+					const mnemonic = await decryptMnemonic(encrypted, password);
+					await this.unlockWallet(mnemonic);
+					new Notice("AlgoChat wallet unlocked");
+				} catch {
+					new Notice("Wrong password — wallet not unlocked. Open settings to retry.");
+				}
+			}).open();
+		} else if (algoMnemonic) {
+			new Notice(
+				"AlgoChat mnemonic is stored unencrypted. Open plugin settings to encrypt it.",
+				10000,
+			);
+		}
 	}
 
 	onunload(): void {
 		this.client.disconnect();
+		this.unlockedMnemonic = null;
+	}
+
+	async unlockWallet(mnemonic: string): Promise<void> {
+		this.unlockedMnemonic = mnemonic;
+		this.client.setUnlockedMnemonic(mnemonic);
+	}
+
+	lockWallet(): void {
+		this.unlockedMnemonic = null;
+		this.client.setUnlockedMnemonic(null);
 	}
 
 	async loadSettings(): Promise<void> {
@@ -150,6 +191,10 @@ export default class CorvidAgentPlugin extends Plugin {
 	}
 
 	async saveSettings(): Promise<void> {
+		// Never persist plaintext mnemonic if we have an encrypted version
+		if (this.settings.algoMnemonicEncrypted) {
+			this.settings.algoMnemonic = "";
+		}
 		await this.saveData(this.settings);
 		this.client?.updateSettings(this.settings);
 	}
@@ -178,9 +223,7 @@ export default class CorvidAgentPlugin extends Plugin {
 
 	promptUser(message: string): Promise<string | null> {
 		return new Promise((resolve) => {
-			const modal = new (class extends (
-				require("obsidian") as typeof import("obsidian")
-			).Modal {
+			const modal = new (class extends Modal {
 				result: string | null = null;
 				onOpen(): void {
 					const { contentEl } = this;
@@ -205,5 +248,43 @@ export default class CorvidAgentPlugin extends Plugin {
 			})(this.app);
 			modal.open();
 		});
+	}
+}
+
+class WalletUnlockModal extends Modal {
+	private onSubmit: (password: string) => void;
+
+	constructor(app: App, onSubmit: (password: string) => void) {
+		super(app);
+		this.onSubmit = onSubmit;
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.createEl("h2", { text: "Unlock AlgoChat Wallet" });
+		contentEl.createEl("p", {
+			text: "Enter your wallet password to use AlgoChat.",
+		});
+
+		let pw = "";
+		new Setting(contentEl).setName("Password").addText((t) => {
+			t.inputEl.type = "password";
+			t.onChange((v) => { pw = v; });
+			t.inputEl.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") { this.close(); this.onSubmit(pw); }
+			});
+			setTimeout(() => t.inputEl.focus(), 50);
+		});
+
+		new Setting(contentEl).addButton((btn) =>
+			btn.setButtonText("Unlock").setCta().onClick(() => {
+				this.close();
+				this.onSubmit(pw);
+			}),
+		);
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }

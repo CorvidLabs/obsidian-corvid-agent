@@ -3,6 +3,7 @@ import type CorvidAgentPlugin from "./main";
 import { type ProviderType, PROVIDER_OPTIONS } from "./providers";
 import { AlgoChatProvider, createRandomChatAccount, validateMnemonic, type AlgoNetwork } from "./algochat-provider";
 import { createChatAccountFromMnemonic } from "@corvidlabs/ts-algochat";
+import { type EncryptedMnemonic, encryptMnemonic, decryptMnemonic } from "./mnemonic-crypto";
 
 export interface SerializedChatMessage {
 	role: "user" | "assistant" | "system";
@@ -33,7 +34,9 @@ export interface CorvidAgentSettings {
 	maxToolCallDepth: number;
 
 	// ─── AlgoChat wallet ─────────────────────────────────
-	/** 25-word mnemonic — stored in plaintext, warn user */
+	/** Encrypted mnemonic (AES-GCM + PBKDF2). Never store plaintext here. */
+	algoMnemonicEncrypted: EncryptedMnemonic | null;
+	/** Legacy plaintext mnemonic — migrated to encrypted on first unlock. */
 	algoMnemonic: string;
 	algoNetwork: AlgoNetwork;
 	algoTargetAddress: string;
@@ -56,6 +59,7 @@ export const DEFAULT_SETTINGS: CorvidAgentSettings = {
 	maxContextLength: 8000,
 	enableTools: false,
 	maxToolCallDepth: 10,
+	algoMnemonicEncrypted: null,
 	algoMnemonic: "",
 	algoNetwork: "testnet",
 	algoTargetAddress: "",
@@ -294,16 +298,18 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 	private renderAlgoChatSettings(containerEl: HTMLElement): void {
 		containerEl.createEl("h2", { text: "AlgoChat Wallet" });
 
-		// Security warning
-		const warning = containerEl.createEl("div", { cls: "corvid-algochat-warning" });
-		warning.createEl("strong", { text: "⚠ Security notice: " });
-		warning.appendText(
-			"Your mnemonic is stored in plaintext in your Obsidian vault under " +
-			".obsidian/plugins/obsidian-corvid-agent/data.json. " +
-			"Use a dedicated low-balance wallet — do not store significant funds here.",
-		);
+		const encrypted = this.plugin.settings.algoMnemonicEncrypted;
+		const unlocked = this.plugin.unlockedMnemonic;
+
+		if (encrypted) {
+			this.renderLockedWalletSettings(containerEl, encrypted, unlocked);
+		} else {
+			this.renderNewWalletSetup(containerEl);
+		}
 
 		// Network selector
+		containerEl.createEl("h2", { text: "Network" });
+
 		new Setting(containerEl)
 			.setName("Network")
 			.setDesc("Algorand network to use")
@@ -334,50 +340,36 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 				);
 		}
 
-		// Mnemonic — masked input with show/hide toggle
-		let mnemonicInput: HTMLInputElement | null = null;
-		let showingMnemonic = false;
+		// Target address
+		containerEl.createEl("h2", { text: "AlgoChat Recipient" });
 
 		new Setting(containerEl)
-			.setName("Mnemonic")
-			.setDesc("25-word Algorand mnemonic phrase. Hidden by default — click the eye icon to reveal.")
-			.addText((text) => {
-				text.inputEl.type = "password";
-				text.inputEl.style.fontFamily = "var(--font-monospace)";
-				text.inputEl.style.width = "100%";
-				mnemonicInput = text.inputEl;
-				text.setPlaceholder("word1 word2 ... word25");
-				text.setValue(this.plugin.settings.algoMnemonic);
-				text.onChange(async (v) => {
-					this.plugin.settings.algoMnemonic = v.trim();
-					await this.plugin.saveSettings();
-				});
-			})
-			.addExtraButton((btn) => {
-				btn.setIcon("eye").setTooltip("Show / hide mnemonic");
-				btn.onClick(() => {
-					showingMnemonic = !showingMnemonic;
-					if (mnemonicInput) mnemonicInput.type = showingMnemonic ? "text" : "password";
-					btn.setIcon(showingMnemonic ? "eye-off" : "eye");
-				});
-			});
-
-		// Generate + Import buttons
-		new Setting(containerEl)
-			.setName("Generate new wallet")
-			.setDesc("Create a new random wallet. Copy and save the mnemonic before closing!")
-			.addButton((btn) =>
-				btn.setButtonText("Generate").onClick(() => {
-					const { account, mnemonic } = createRandomChatAccount();
-					new MnemonicModal(this.app, { address: account.address, mnemonic }).open();
-				}),
+			.setName("Target address")
+			.setDesc("Algorand address of the agent to chat with")
+			.addText((text) =>
+				text
+					.setPlaceholder("AGENT_ADDRESS...")
+					.setValue(this.plugin.settings.algoTargetAddress)
+					.onChange(async (v) => {
+						this.plugin.settings.algoTargetAddress = v.trim();
+						await this.plugin.saveSettings();
+					}),
 			);
+	}
 
-		// Address display (derived from mnemonic)
-		const mnemonic = this.plugin.settings.algoMnemonic;
-		if (mnemonic && validateMnemonic(mnemonic)) {
+	private renderLockedWalletSettings(
+		containerEl: HTMLElement,
+		encrypted: EncryptedMnemonic,
+		unlocked: string | null,
+	): void {
+		const statusDiv = containerEl.createDiv({ cls: "corvid-algochat-wallet-status" });
+
+		if (unlocked) {
+			statusDiv.createEl("span", { text: "🔓 Wallet unlocked", cls: "corvid-wallet-status-ok" });
+
+			// Address display
 			try {
-				const account = createChatAccountFromMnemonic(mnemonic);
+				const account = createChatAccountFromMnemonic(unlocked);
 				new Setting(containerEl)
 					.setName("Wallet address")
 					.setDesc("Send ALGO here to fund your chat wallet")
@@ -397,51 +389,222 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 			} catch {
 				// ignore
 			}
-		}
 
-		// Publish encryption key on-chain
+			// Publish key button
+			new Setting(containerEl)
+				.setName("Publish encryption key")
+				.setDesc(
+					"Announce your X25519 key on-chain so others can send you encrypted messages. " +
+					"Required to receive messages. Costs ~0.001 ALGO.",
+				)
+				.addButton((btn) => {
+					btn.setButtonText("Publish key").onClick(async () => {
+						const provider = this.plugin.client.activeProvider;
+						if (!(provider instanceof AlgoChatProvider)) {
+							new Notice("AlgoChat not initialized");
+							return;
+						}
+						btn.setButtonText("Publishing…").setDisabled(true);
+						try {
+							const txid = await provider.publishKey();
+							new Notice(`Key published! Tx: ${txid.slice(0, 12)}…`, 8000);
+						} catch (err) {
+							new Notice(
+								`Publish failed: ${err instanceof Error ? err.message : String(err)}`,
+								8000,
+							);
+						} finally {
+							btn.setButtonText("Publish key").setDisabled(false);
+						}
+					});
+				});
+
+			// Lock wallet
+			new Setting(containerEl)
+				.setName("Lock wallet")
+				.setDesc("Clear the mnemonic from memory (you will need your password to unlock again)")
+				.addButton((btn) =>
+					btn.setButtonText("Lock").setWarning().onClick(async () => {
+						this.plugin.lockWallet();
+						this.display();
+					}),
+				);
+
+			// Change password
+			new Setting(containerEl)
+				.setName("Change password")
+				.setDesc("Re-encrypt the mnemonic with a new password")
+				.addButton((btn) =>
+					btn.setButtonText("Change password").onClick(() => {
+						new PasswordModal(
+							this.app,
+							"New password",
+							"Confirm new password",
+							async (password) => {
+								try {
+									const newEncrypted = await encryptMnemonic(unlocked, password);
+									this.plugin.settings.algoMnemonicEncrypted = newEncrypted;
+									await this.plugin.saveSettings();
+									new Notice("Password changed");
+									this.display();
+								} catch (err) {
+									new Notice(`Failed: ${err instanceof Error ? err.message : String(err)}`);
+								}
+							},
+						).open();
+					}),
+				);
+
+			// Remove wallet
+			new Setting(containerEl)
+				.setName("Remove wallet")
+				.setDesc("Delete the wallet from this plugin (does not affect the Algorand account)")
+				.addButton((btn) =>
+					btn.setButtonText("Remove wallet").setWarning().onClick(async () => {
+						this.plugin.settings.algoMnemonicEncrypted = null;
+						this.plugin.settings.algoMnemonic = "";
+						this.plugin.lockWallet();
+						await this.plugin.saveSettings();
+						this.display();
+					}),
+				);
+		} else {
+			statusDiv.createEl("span", { text: "🔒 Wallet locked — enter password to unlock", cls: "corvid-wallet-status-warn" });
+
+			new Setting(containerEl)
+				.setName("Unlock wallet")
+				.setDesc("Enter your wallet password to use AlgoChat")
+				.addButton((btn) =>
+					btn.setButtonText("Unlock").onClick(() => {
+						new UnlockModal(
+							this.app,
+							async (password) => {
+								try {
+									const mnemonic = await decryptMnemonic(encrypted, password);
+									await this.plugin.unlockWallet(mnemonic);
+									new Notice("Wallet unlocked");
+									this.display();
+								} catch {
+									new Notice("Wrong password — could not unlock wallet");
+								}
+							},
+						).open();
+					}),
+				);
+
+			// Remove wallet
+			new Setting(containerEl)
+				.setName("Remove wallet")
+				.setDesc("Delete the wallet from this plugin (does not affect the Algorand account)")
+				.addButton((btn) =>
+					btn.setButtonText("Remove wallet").setWarning().onClick(async () => {
+						this.plugin.settings.algoMnemonicEncrypted = null;
+						this.plugin.settings.algoMnemonic = "";
+						await this.plugin.saveSettings();
+						this.display();
+					}),
+				);
+		}
+	}
+
+	private renderNewWalletSetup(containerEl: HTMLElement): void {
+		const info = containerEl.createEl("div", { cls: "corvid-algochat-warning" });
+		info.createEl("strong", { text: "No wallet configured. " });
+		info.appendText(
+			"Generate a new wallet or import an existing mnemonic. " +
+			"Your mnemonic will be encrypted with a password before being stored.",
+		);
+
+		// Generate
 		new Setting(containerEl)
-			.setName("Publish encryption key")
-			.setDesc(
-				"Announce your X25519 key on-chain so others can discover it and send encrypted messages to you. " +
-				"Required to receive messages. Costs ~0.001 ALGO.",
-			)
-			.addButton((btn) => {
-				btn.setButtonText("Publish key").onClick(async () => {
-					const provider = this.plugin.client.activeProvider;
-					if (!(provider instanceof AlgoChatProvider)) {
-						new Notice("AlgoChat not initialized — check your mnemonic");
-						return;
-					}
-					btn.setButtonText("Publishing…").setDisabled(true);
-					try {
-						const txid = await provider.publishKey();
-						new Notice(`Encryption key published! Tx: ${txid.slice(0, 12)}…`, 8000);
-					} catch (err) {
-						new Notice(
-							`Publish failed: ${err instanceof Error ? err.message : String(err)}`,
-							8000,
-						);
-					} finally {
-						btn.setButtonText("Publish key").setDisabled(false);
-					}
+			.setName("Generate new wallet")
+			.setDesc("Create a new random wallet — you will set a password to encrypt it")
+			.addButton((btn) =>
+				btn.setButtonText("Generate").onClick(() => {
+					const { account, mnemonic } = createRandomChatAccount();
+					new MnemonicModal(this.app, { address: account.address, mnemonic }).open();
+					// After viewing, prompt to save with password
+					new PasswordModal(
+						this.app,
+						"Set wallet password",
+						"Confirm password",
+						async (password) => {
+							try {
+								const enc = await encryptMnemonic(mnemonic, password);
+								this.plugin.settings.algoMnemonicEncrypted = enc;
+								this.plugin.settings.algoMnemonic = "";
+								await this.plugin.unlockWallet(mnemonic);
+								await this.plugin.saveSettings();
+								new Notice("Wallet saved and unlocked");
+								this.display();
+							} catch (err) {
+								new Notice(`Failed to save wallet: ${err instanceof Error ? err.message : String(err)}`);
+							}
+						},
+					).open();
+				}),
+			);
+
+		// Import existing mnemonic
+		let tempMnemonic = "";
+		let mnemonicInput: HTMLInputElement | null = null;
+		let showingMnemonic = false;
+
+		new Setting(containerEl)
+			.setName("Import mnemonic")
+			.setDesc("Paste your 25-word Algorand mnemonic, then click 'Encrypt & save'")
+			.addText((text) => {
+				text.inputEl.type = "password";
+				text.inputEl.style.fontFamily = "var(--font-monospace)";
+				text.inputEl.style.width = "100%";
+				mnemonicInput = text.inputEl;
+				text.setPlaceholder("word1 word2 … word25");
+				text.onChange((v) => {
+					tempMnemonic = v.trim();
+				});
+			})
+			.addExtraButton((btn) => {
+				btn.setIcon("eye").setTooltip("Show / hide mnemonic");
+				btn.onClick(() => {
+					showingMnemonic = !showingMnemonic;
+					if (mnemonicInput) mnemonicInput.type = showingMnemonic ? "text" : "password";
+					btn.setIcon(showingMnemonic ? "eye-off" : "eye");
 				});
 			});
 
-		// Target address
-		containerEl.createEl("h2", { text: "AlgoChat Recipient" });
-
 		new Setting(containerEl)
-			.setName("Target address")
-			.setDesc("Algorand address of the agent to chat with")
-			.addText((text) =>
-				text
-					.setPlaceholder("AGENT_ADDRESS...")
-					.setValue(this.plugin.settings.algoTargetAddress)
-					.onChange(async (v) => {
-						this.plugin.settings.algoTargetAddress = v.trim();
-						await this.plugin.saveSettings();
-					}),
+			.setName("Encrypt & save")
+			.setDesc("Encrypt the mnemonic above with a password and store it securely")
+			.addButton((btn) =>
+				btn.setButtonText("Encrypt & save").setCta().onClick(() => {
+					if (!tempMnemonic) {
+						new Notice("Enter a mnemonic first");
+						return;
+					}
+					if (!validateMnemonic(tempMnemonic)) {
+						new Notice("Invalid mnemonic — check the 25 words");
+						return;
+					}
+					new PasswordModal(
+						this.app,
+						"Set wallet password",
+						"Confirm password",
+						async (password) => {
+							try {
+								const enc = await encryptMnemonic(tempMnemonic, password);
+								this.plugin.settings.algoMnemonicEncrypted = enc;
+								this.plugin.settings.algoMnemonic = "";
+								await this.plugin.unlockWallet(tempMnemonic);
+								await this.plugin.saveSettings();
+								tempMnemonic = "";
+								new Notice("Wallet encrypted and saved");
+								this.display();
+							} catch (err) {
+								new Notice(`Failed: ${err instanceof Error ? err.message : String(err)}`);
+							}
+						},
+					).open();
+				}),
 			);
 	}
 
@@ -557,6 +720,96 @@ export class CorvidAgentSettingTab extends PluginSettingTab {
 			default:
 				return "Model to use for chat";
 		}
+	}
+}
+
+/** Prompt for a single password (with confirm field). */
+class PasswordModal extends Modal {
+	private label: string;
+	private confirmLabel: string;
+	private onSubmit: (password: string) => void;
+
+	constructor(
+		app: App,
+		label: string,
+		confirmLabel: string,
+		onSubmit: (password: string) => void,
+	) {
+		super(app);
+		this.label = label;
+		this.confirmLabel = confirmLabel;
+		this.onSubmit = onSubmit;
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.createEl("h2", { text: this.label });
+
+		let pw1 = "";
+		let pw2 = "";
+
+		const s1 = new Setting(contentEl).setName(this.label);
+		s1.addText((t) => {
+			t.inputEl.type = "password";
+			t.onChange((v) => { pw1 = v; });
+		});
+
+		const s2 = new Setting(contentEl).setName(this.confirmLabel);
+		s2.addText((t) => {
+			t.inputEl.type = "password";
+			t.onChange((v) => { pw2 = v; });
+		});
+
+		const errEl = contentEl.createEl("p", { cls: "corvid-error-text", text: "" });
+
+		new Setting(contentEl).addButton((btn) =>
+			btn.setButtonText("Save").setCta().onClick(() => {
+				if (!pw1) { errEl.setText("Password cannot be empty"); return; }
+				if (pw1 !== pw2) { errEl.setText("Passwords do not match"); return; }
+				this.close();
+				this.onSubmit(pw1);
+			}),
+		);
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+}
+
+/** Single-field password prompt for unlocking. */
+class UnlockModal extends Modal {
+	private onSubmit: (password: string) => void;
+
+	constructor(app: App, onSubmit: (password: string) => void) {
+		super(app);
+		this.onSubmit = onSubmit;
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.createEl("h2", { text: "Unlock AlgoChat Wallet" });
+
+		let pw = "";
+		const s = new Setting(contentEl).setName("Password");
+		s.addText((t) => {
+			t.inputEl.type = "password";
+			t.onChange((v) => { pw = v; });
+			t.inputEl.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") { this.close(); this.onSubmit(pw); }
+			});
+		});
+
+		new Setting(contentEl).addButton((btn) =>
+			btn.setButtonText("Unlock").setCta().onClick(() => {
+				this.close();
+				this.onSubmit(pw);
+			}),
+		);
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }
 
