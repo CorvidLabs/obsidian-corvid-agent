@@ -4,7 +4,7 @@ import { requestUrl } from "obsidian";
  * Provider types supported by the plugin.
  * corvid-agent uses WebSocket streaming; all others use HTTP streaming/polling.
  */
-export type ProviderType = "corvid-agent" | "ollama" | "claude" | "openai";
+export type ProviderType = "corvid-agent" | "ollama" | "claude" | "openai" | "algochat";
 
 export interface ProviderConfig {
 	type: ProviderType;
@@ -653,8 +653,10 @@ export function createProvider(config: ProviderConfig): Provider {
 			return new OpenAIProvider(config);
 		case "corvid-agent":
 			// corvid-agent uses its own CorvidClient, not this provider system
-			// This should never be called — corvid-agent has its own path
 			throw new Error("corvid-agent uses CorvidClient directly, not Provider");
+		case "algochat":
+			// algochat uses AlgoChatProvider — created by corvid-client with wallet config
+			throw new Error("algochat uses AlgoChatProvider directly, not createProvider");
 	}
 }
 
@@ -693,5 +695,12 @@ export const PROVIDER_OPTIONS: {
 		defaultUrl: "https://api.openai.com",
 		defaultModel: "gpt-4o",
 		needsApiKey: true,
+	},
+	{
+		value: "algochat",
+		label: "AlgoChat (Algorand)",
+		defaultUrl: "",
+		defaultModel: "",
+		needsApiKey: false,
 	},
 ];
