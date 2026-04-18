@@ -1,15 +1,18 @@
 {
   "hashes": {
-    "specs/plugin/requirements.md": "57a3c8283d89e874fa2eec112bc01481da03a18794ee82d7253c688bbe0426f9",
-    "src/chat-view.ts": "77b53856fb9dd5ff7b6db17e72618035f43a3e7538cddcabcbd5914e0d62ea4c",
-    "styles.css": "1fb2408ec3db529674a6edbd741af605b4856920813726ad5f2e66aecf62898d",
-    "specs/plugin/design.md": "fcf4df8c3622bb7df4535c3cafbb6d2317cc08c7e7b2f327fbeb341ba83c8ee5",
-    "src/settings.ts": "302344647c734e888ad23d0dae1823c3076b844670b89ce6e4ff3ad61af19c3f",
-    "src/providers.ts": "47e9c456bfe55e2fb3e0c0f33e0f3d94f624378a5fc608161342b58472863f64",
-    "specs/plugin/plugin.spec.md": "868c388586f10978e297a109dbe2a06ff8eb3f13a29f91e11a4dec8a1fdcf235",
+    "src/chat-view.ts": "76be80ce224f1b8bcc88d1578fff379f757676cccf2c6054038d869d9ac9f350",
+    "src/tools/registry.ts": "fbd7e593016e44f061eb5bcb636313aeb770ce91bf0ff5c25ccbdf4c0436b691",
+    "src/main.ts": "d2f4d6846eb341b9c440862c9267e3f25acccff30711467f56e4d197d09f252c",
+    "src/settings.ts": "b18841b9246231d0f964705abe976e9924a793caa0e5e4a55844b1dd71d3bd94",
     "src/memory-commands.ts": "6408e5b33940524f4928ae0494301f4b60e4ab07b92042ba1624780c4ec21c7c",
-    "src/corvid-client.ts": "70a99598a2a328bc4635da301ddc478289ac6c392337761aecd03d82451af376",
-    "src/main.ts": "81b0fa94a510d413e9192cfa657399d2d0ce73cc742923ef45091d87946fec60",
-    "manifest.json": "9999c3e98c495f8fc2006f5a3704bdf4071deec9dbdb0808797fb3329e15dd04"
+    "src/corvid-client.ts": "4f3b48edcca1ff4a57bfdb7b4ad77cde124a85b7d0b09b7617c4599bfb2c5fd0",
+    "src/tools/get-note-metadata.ts": "00b492780cafb6d500c28a190fefba13c9244cc4c807796433ef3aa33ac3d974",
+    "styles.css": "c9e6c5797adf72abaf77bbb8ef9cf00db5be7892dc7cd0646eacb97091f68a38",
+    "specs/plugin/requirements.md": "57a3c8283d89e874fa2eec112bc01481da03a18794ee82d7253c688bbe0426f9",
+    "src/providers.ts": "bebce3b50b586795baf069069c7e0fba633f1e902c33ad0d1d20f39f90056653",
+    "specs/plugin/design.md": "fcf4df8c3622bb7df4535c3cafbb6d2317cc08c7e7b2f327fbeb341ba83c8ee5",
+    "specs/plugin/plugin.spec.md": "aa6eb04d506e1da70e7bf69dac320a104eac3293a657cab76aa1608e5f657d43",
+    "manifest.json": "13b88404840bad7f0686f6721faa0488725d507b5f2543edf4999f258155784e",
+    "src/tools/read-note.ts": "8db903e8ea4537e31b00c9c0327ff89930bd32f35ea4981d574beb0226987df6"
   }
 }

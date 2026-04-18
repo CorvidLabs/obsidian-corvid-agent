@@ -7,6 +7,7 @@ import {
 	type ToolCall as ProviderToolCall,
 	createProvider,
 } from "./providers";
+import { AlgoChatProvider } from "./algochat-provider";
 import {
 	ToolRegistry,
 	type ToolCall,
@@ -121,10 +122,17 @@ export class CorvidClient {
 	}
 
 	private initProvider(): void {
-		if (this.settings.provider !== "corvid-agent") {
-			this.provider = createProvider(this.getProviderConfig());
-		} else {
+		if (this.settings.provider === "corvid-agent") {
 			this.provider = null;
+		} else if (this.settings.provider === "algochat") {
+			this.provider = new AlgoChatProvider(this.getProviderConfig(), {
+				mnemonic: this.settings.algoMnemonic,
+				network: this.settings.algoNetwork,
+				targetAddress: this.settings.algoTargetAddress,
+				localnetUrl: this.settings.algoLocalnetUrl,
+			});
+		} else {
+			this.provider = createProvider(this.getProviderConfig());
 		}
 	}
 
@@ -155,6 +163,13 @@ export class CorvidClient {
 		if (providerChanged) {
 			this.disconnect();
 			this.initProvider();
+		} else if (this.provider instanceof AlgoChatProvider) {
+			this.provider.updateAlgoConfig({
+				mnemonic: settings.algoMnemonic,
+				network: settings.algoNetwork,
+				targetAddress: settings.algoTargetAddress,
+				localnetUrl: settings.algoLocalnetUrl,
+			});
 		} else if (this.provider) {
 			this.provider.updateConfig(this.getProviderConfig());
 		}

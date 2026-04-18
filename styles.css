@@ -491,3 +491,30 @@
 	padding: 6px;
 	font-family: inherit;
 }
+
+/* AlgoChat settings */
+
+.corvid-algochat-warning {
+	background: var(--background-modifier-error);
+	border-left: 3px solid var(--color-red);
+	padding: 8px 12px;
+	border-radius: 4px;
+	margin-bottom: 12px;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.corvid-monospace {
+	font-family: var(--font-monospace);
+	background: var(--background-secondary);
+	padding: 8px;
+	border-radius: 4px;
+	word-break: break-all;
+	margin: 4px 0 12px;
+}
+
+.corvid-btn-row {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
