@@ -14,6 +14,7 @@ files:
   - src/tools/get-note-metadata.ts
   - src/tools/recall-memory.ts
   - src/tools/list-notes.ts
+  - src/tools/search-notes.ts
   - styles.css
   - manifest.json
 depends_on: []
@@ -77,6 +78,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `getNoteMetadataTool` | `src/tools/get-note-metadata.ts` | `get_note_metadata` tool instance — returns note metadata without reading body |
 | `createRecallMemoryTool` | `src/tools/recall-memory.ts` | Factory for `recall_memory` tool — only registered when provider is `corvid-agent` |
 | `listNotesTool` | `src/tools/list-notes.ts` | `list_notes` tool instance — lists vault directory entries |
+| `searchNotesTool` | `src/tools/search-notes.ts` | `search_notes` tool instance — full-text vault search |
 
 ### Exported Functions
 
@@ -126,6 +128,7 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | `get_note_metadata` | `src/tools/get-note-metadata.ts` | `{ path: string }` | JSON string `{ path, frontmatter?, tags, headings, backlinks, outgoingLinks }` |
 | `recall_memory` | `src/tools/recall-memory.ts` | `{ key?: string, query?: string }` | JSON string `{ results }` — corvid-agent only |
 | `list_notes` | `src/tools/list-notes.ts` | `{ folder?: string, recursive?: boolean }` | JSON string `{ folder, entries: Array<{ path, type }> }` |
+| `search_notes` | `src/tools/search-notes.ts` | `{ query: string, limit?: number }` | JSON string `{ results: Array<{ path, snippet, score }> }` |
 
 ### Tool Error Codes
 
@@ -134,6 +137,7 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | `invalid_path` | Path is empty, absolute, or contains `..` traversal |
 | `not_found` | No file exists at the given vault path |
 | `unknown_tool` | Registry has no tool with that name |
+| `empty_query` | `search_notes` called with empty or missing query |
 
 ## Invariants
 
@@ -166,6 +170,9 @@ Tools allow the model to interact with the vault during chat. Tools are register
 27. `list_notes` rejects paths containing `..` segments or absolute paths (path safety).
 28. `list_notes` defaults to vault root when no folder is specified, and direct children when `recursive` is false.
 29. `list_notes` classifies entries as `"note"` (`.md`), `"folder"`, or `"asset"` (all other file types).
+30. `search_notes` returns an empty `results` array (not an error) when no notes match.
+31. `search_notes` defaults `limit` to 20 when omitted or invalid.
+32. `search_notes` uses `cachedRead` for content access and metadata cache for headings/tags to minimize I/O.
 
 ## Behavioral Examples
 
