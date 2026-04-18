@@ -13,6 +13,7 @@ files:
   - src/tools/read-note.ts
   - src/tools/get-note-metadata.ts
   - src/tools/recall-memory.ts
+  - src/tools/list-notes.ts
   - styles.css
   - manifest.json
 depends_on: []
@@ -75,6 +76,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `readNoteTool` | `src/tools/read-note.ts` | `read_note` tool instance — reads vault notes by path |
 | `getNoteMetadataTool` | `src/tools/get-note-metadata.ts` | `get_note_metadata` tool instance — returns note metadata without reading body |
 | `createRecallMemoryTool` | `src/tools/recall-memory.ts` | Factory for `recall_memory` tool — only registered when provider is `corvid-agent` |
+| `listNotesTool` | `src/tools/list-notes.ts` | `list_notes` tool instance — lists vault directory entries |
 
 ### Exported Functions
 
@@ -123,6 +125,7 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | `read_note` | `src/tools/read-note.ts` | `{ path: string }` | JSON string `{ path, content, frontmatter? }` |
 | `get_note_metadata` | `src/tools/get-note-metadata.ts` | `{ path: string }` | JSON string `{ path, frontmatter?, tags, headings, backlinks, outgoingLinks }` |
 | `recall_memory` | `src/tools/recall-memory.ts` | `{ key?: string, query?: string }` | JSON string `{ results }` — corvid-agent only |
+| `list_notes` | `src/tools/list-notes.ts` | `{ folder?: string, recursive?: boolean }` | JSON string `{ folder, entries: Array<{ path, type }> }` |
 
 ### Tool Error Codes
 
@@ -160,6 +163,9 @@ Tools allow the model to interact with the vault during chat. Tools are register
 24. `get_note_metadata` rejects paths containing `..` segments or absolute paths (same path safety as `read_note`).
 25. `recall_memory` requires at least one of `key` or `query` — returns an error result if both are absent.
 26. `recall_memory` is only registered when `settings.provider === "corvid-agent"`.
+27. `list_notes` rejects paths containing `..` segments or absolute paths (path safety).
+28. `list_notes` defaults to vault root when no folder is specified, and direct children when `recursive` is false.
+29. `list_notes` classifies entries as `"note"` (`.md`), `"folder"`, or `"asset"` (all other file types).
 
 ## Behavioral Examples
 
