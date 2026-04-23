@@ -1,0 +1,15 @@
+[tasks]
+build = "node esbuild.config.mjs production"
+dev = "node esbuild.config.mjs"
+spec-check = "bash scripts/specsync.sh check"
+spec-coverage = "bash scripts/specsync.sh coverage"
+spec-score = "bash scripts/specsync.sh score"
+
+[lanes.check]
+steps = ["build"]
+
+[lanes.ci]
+steps = ["build", "spec-check"]
+
+[lanes.pre-commit]
+steps = ["build", "spec-check"]
