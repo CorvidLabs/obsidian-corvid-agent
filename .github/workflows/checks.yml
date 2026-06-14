@@ -3,19 +3,37 @@ name: Checks
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "**/*.md"
-      - "LICENSE"
+    paths:
+      - "src/**"
+      - "specs/**"
+      - "scripts/**"
+      - "package.json"
+      - "bun.lock"
+      - "tsconfig.json"
+      - "esbuild.config.mjs"
+      - "manifest.json"
+      - ".github/workflows/checks.yml"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - "**/*.md"
-      - "LICENSE"
+    paths:
+      - "src/**"
+      - "specs/**"
+      - "scripts/**"
+      - "package.json"
+      - "bun.lock"
+      - "tsconfig.json"
+      - "esbuild.config.mjs"
+      - "manifest.json"
+      - ".github/workflows/checks.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: write
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   checks:
@@ -24,7 +42,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: oven-sh/setup-bun@v2
         with:
