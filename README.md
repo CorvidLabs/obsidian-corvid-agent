@@ -1,15 +1,21 @@
 # Obsidian Corvid Agent
 
-AI chat plugin for Obsidian with multi-backend support. Connect to **Ollama**, **Claude (Anthropic)**, **OpenAI**, or a [corvid-agent](https://github.com/CorvidLabs/corvid-agent) instance — and chat with AI directly from the sidebar.
+AI chat plugin for Obsidian with multi-backend support. Connect to **Ollama**, **Claude (Anthropic)**, **OpenAI**, **AlgoChat (Algorand)**, or a [corvid-agent](https://github.com/CorvidLabs/corvid-agent) instance — and chat with AI directly from the sidebar.
 
 ## Features
 
-- **Multi-backend** — Choose between Ollama (local), Claude API, OpenAI API, or corvid-agent
+- **Multi-backend** — Choose between Ollama (local), Claude API, OpenAI API, AlgoChat (Algorand), or corvid-agent
+- **Vault tools (function calling)** — On supported backends, the model can invoke read-only vault tools to read, search, and navigate your notes (see [Vault Tools](#vault-tools))
 - **Chat sidebar** — Real-time streaming conversation from a sidebar panel
 - **Vault context** — Optionally include the active note as context with messages
 - **Selection actions** — Send or explain selected text via the agent
 - **Chat history** — Persists across plugin reloads
 - **Mobile-friendly** — Touch-optimized layout for Obsidian Mobile
+
+### AlgoChat extras (when using the AlgoChat backend)
+
+- **Algorand wallet** — Built-in wallet management over Algorand testnet/mainnet/localnet (algod + indexer)
+- **Encrypted mnemonic at rest** — The wallet mnemonic is encrypted before being stored locally
 
 ### Corvid Agent extras (when using corvid-agent backend)
 
@@ -26,6 +32,7 @@ Pick one backend:
 | **Ollama** | [Ollama](https://ollama.com) running locally (default: `http://localhost:11434`) |
 | **Claude** | Anthropic API key |
 | **OpenAI** | OpenAI API key |
+| **AlgoChat** | Funded Algorand wallet mnemonic + a target address (testnet/mainnet/localnet) |
 | **Corvid Agent** | Running [corvid-agent](https://github.com/CorvidLabs/corvid-agent) instance + API key |
 
 ## Installation
@@ -51,7 +58,7 @@ Then enable "Corvid Agent" in Settings → Community Plugins.
 ## Setup
 
 1. **Settings → Corvid Agent**
-2. Select your **Backend** (Ollama, Claude, OpenAI, or Corvid Agent)
+2. Select your **Backend** (Ollama, Claude, OpenAI, AlgoChat, or Corvid Agent)
 3. Set the **Server URL** (auto-fills based on backend)
 4. Set **API key** if required
 5. Set **Model** (for direct API backends)
@@ -89,6 +96,20 @@ When using the corvid-agent backend, also set:
 
 When enabled in settings, the plugin automatically prepends the active note's content (up to the configured max length) to every message you send.
 
+### Vault Tools
+
+On backends that support tool use / function calling (currently the **Claude** backend, `supportsTools = true`), the model can invoke read-only tools to explore your vault on demand instead of relying solely on the active-note context:
+
+| Tool | Description |
+|------|-------------|
+| `read_note` | Read a specific note by path, returning its content and parsed frontmatter |
+| `search_notes` | Full-text search across all markdown notes, returning ranked results with snippets |
+| `list_notes` | List notes and folders so the model can navigate vault structure |
+| `get_note_metadata` | Get a note's frontmatter, tags, headings, and links without reading full content |
+| `recall_memory` | Recall memories from the agent's on-chain store by exact key or semantic query |
+
+All vault tools are read-only — the model cannot modify or delete notes.
+
 ## Development
 
 ```bash
@@ -118,6 +139,9 @@ src/
   chat-view.ts         — Sidebar chat panel (ItemView)
   corvid-client.ts     — Unified client (WebSocket for corvid-agent, Provider for direct APIs)
   providers.ts         — Provider abstraction (Ollama, Claude, OpenAI implementations)
+  algochat-provider.ts — AlgoChat provider (Algorand encrypted on-chain messaging)
+  mnemonic-crypto.ts   — Encrypt/decrypt the AlgoChat wallet mnemonic at rest
+  tools/               — Model-invokable vault tools + registry
   settings.ts          — Plugin settings tab with dynamic provider fields
   memory-commands.ts   — Memory search, save, and selection commands
 specs/
@@ -131,9 +155,10 @@ styles.css             — Obsidian-native theming with CSS variables
 CorvidClient
   ├── corvid-agent mode → WebSocket (/ws) + REST API
   └── direct API mode → Provider interface
-        ├── OllamaProvider  → /api/chat (streaming JSON)
-        ├── ClaudeProvider  → /v1/messages (SSE)
-        └── OpenAIProvider  → /v1/chat/completions (SSE)
+        ├── OllamaProvider   → /api/chat (streaming JSON)
+        ├── ClaudeProvider   → /v1/messages (SSE), supports vault tools
+        ├── OpenAIProvider   → /v1/chat/completions (SSE)
+        └── AlgoChatProvider → Algorand algod + indexer (encrypted on-chain messaging)
 ```
 
 ## License
