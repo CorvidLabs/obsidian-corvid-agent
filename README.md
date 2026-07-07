@@ -1,5 +1,7 @@
 # Obsidian Corvid Agent
 
+![spec coverage](https://img.shields.io/endpoint?url=https://corvidlabs.github.io/obsidian-corvid-agent/badges/coverage.json)
+
 AI chat plugin for Obsidian with multi-backend support. Connect to **Ollama**, **Claude (Anthropic)**, **OpenAI**, **AlgoChat (Algorand)**, or a [corvid-agent](https://github.com/CorvidLabs/corvid-agent) instance — and chat with AI directly from the sidebar.
 
 ## Features
