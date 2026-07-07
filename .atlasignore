@@ -1,0 +1,12 @@
+# Atlas spec-coverage scope. Only the esbuild bundle output and its build config
+# are dropped; every real plugin source file under src/ stays in the denominator.
+
+# Build output
+main.js
+
+# Build config
+esbuild.config.mjs
+
+# Generated atlas / Pages output (never committed; scoped out defensively)
+_site/
+atlas.json
