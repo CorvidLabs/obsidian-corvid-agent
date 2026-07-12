@@ -1,18 +1,25 @@
 {
   "hashes": {
-    "src/chat-view.ts": "76be80ce224f1b8bcc88d1578fff379f757676cccf2c6054038d869d9ac9f350",
-    "src/tools/registry.ts": "fbd7e593016e44f061eb5bcb636313aeb770ce91bf0ff5c25ccbdf4c0436b691",
-    "src/main.ts": "d2f4d6846eb341b9c440862c9267e3f25acccff30711467f56e4d197d09f252c",
-    "src/settings.ts": "b18841b9246231d0f964705abe976e9924a793caa0e5e4a55844b1dd71d3bd94",
-    "src/memory-commands.ts": "6408e5b33940524f4928ae0494301f4b60e4ab07b92042ba1624780c4ec21c7c",
-    "src/corvid-client.ts": "4f3b48edcca1ff4a57bfdb7b4ad77cde124a85b7d0b09b7617c4599bfb2c5fd0",
-    "src/tools/get-note-metadata.ts": "00b492780cafb6d500c28a190fefba13c9244cc4c807796433ef3aa33ac3d974",
     "styles.css": "c9e6c5797adf72abaf77bbb8ef9cf00db5be7892dc7cd0646eacb97091f68a38",
-    "specs/plugin/requirements.md": "57a3c8283d89e874fa2eec112bc01481da03a18794ee82d7253c688bbe0426f9",
+    "src/tools/registry.ts": "fbd7e593016e44f061eb5bcb636313aeb770ce91bf0ff5c25ccbdf4c0436b691",
+    "src/settings.ts": "926b9f29ccdccf053ce7aa3953944050839a096bb604bbad7d550ca915ee128f",
+    "specs/plugin/requirements.md": "6e65e573a47f3d196a7c24d2b2e2bca04f88cbb3a636980de88d4e043f818d8b",
+    "specs/plugin/context.md": "2fd999ad74b129eaf0d1ff9db923f8f146cdd46e80435a941cfec7a041c6deb3",
+    "src/tools/list-notes.ts": "df98f6ea55f6896625fdf4517dc38409ecfeaa86f673028b646ac6f5ae4a6a20",
+    "src/tools/read-note.ts": "8db903e8ea4537e31b00c9c0327ff89930bd32f35ea4981d574beb0226987df6",
+    "src/chat-view.ts": "76be80ce224f1b8bcc88d1578fff379f757676cccf2c6054038d869d9ac9f350",
     "src/providers.ts": "bebce3b50b586795baf069069c7e0fba633f1e902c33ad0d1d20f39f90056653",
     "specs/plugin/design.md": "fcf4df8c3622bb7df4535c3cafbb6d2317cc08c7e7b2f327fbeb341ba83c8ee5",
-    "specs/plugin/plugin.spec.md": "aa6eb04d506e1da70e7bf69dac320a104eac3293a657cab76aa1608e5f657d43",
+    "src/tools/recall-memory.ts": "92e765e99120911327dd27f8a6223aedb08c942a83d192bb1cd9b7d5208a97b8",
+    ".specsync/config.toml": "b27fe8c3f541bb79921a1dade8a6115744749070fd39374326e85c3598c4d8c1",
+    "specs/plugin/plugin.spec.md": "f15fcc2248c997687680792c1799a343a042af53247d3ed0d08f770bbda8cb80",
+    "src/corvid-client.ts": "6173b87d72a02fd12cd9d75945499beb4d57b300fdece37ad0045f4def3677f2",
+    "src/memory-commands.ts": "6408e5b33940524f4928ae0494301f4b60e4ab07b92042ba1624780c4ec21c7c",
+    "src/tools/search-notes.ts": "12f5c65ebd47b88666404cc33d8a27c7246ac23f8a7dd0d4b99e56980cd589e7",
+    "specs/plugin/tasks.md": "361d320e425c2e45140d44d44aa7467223070f6ca88f2c5385a388bd8444d323",
     "manifest.json": "13b88404840bad7f0686f6721faa0488725d507b5f2543edf4999f258155784e",
-    "src/tools/read-note.ts": "8db903e8ea4537e31b00c9c0327ff89930bd32f35ea4981d574beb0226987df6"
+    "src/main.ts": "1cc4c42bc13e729caa91bf77377528db8272904e3ff3b2178206922ade4ca071",
+    "src/tools/get-note-metadata.ts": "00b492780cafb6d500c28a190fefba13c9244cc4c807796433ef3aa33ac3d974",
+    "specs/plugin/testing.md": "a9a8056ae7ed9e8cb3a7d2989732197814120a3571f536a7690f933463edab78"
   }
 }

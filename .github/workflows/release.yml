@@ -29,8 +29,9 @@ jobs:
         run: bun x tsc --noEmit
 
       - name: Spec validation
-        uses: CorvidLabs/spec-sync@v4.2.0
+        uses: CorvidLabs/spec-sync@59bbfa766c6cce01ab815ab47db195b0629cc014 # v5.0.1
         with:
+          version: '5.0.1'
           strict: 'true'
           comment: 'false'
 

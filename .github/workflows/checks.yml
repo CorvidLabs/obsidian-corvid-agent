@@ -56,9 +56,3 @@ jobs:
 
       - name: Type check
         run: bun x tsc --noEmit
-
-      - name: Spec validation (strict)
-        uses: CorvidLabs/spec-sync@v4.2.0
-        with:
-          strict: 'true'
-          comment: 'false'
