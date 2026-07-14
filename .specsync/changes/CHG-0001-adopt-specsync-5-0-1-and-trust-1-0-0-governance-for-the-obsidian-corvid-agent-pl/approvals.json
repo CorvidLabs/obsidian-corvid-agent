@@ -1,3 +1,179 @@
 {
-  "approvals": []
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784018924,
+      "digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+      "note": "Definition approval for the audited SpecSync 5.0.1 and immutable Trust 1.0.0 migration with complete current provider, AlgoChat, mnemonic, vault, UI, release, and Atlas boundaries; no product behavior changes."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019039,
+      "digest": "24a950273096ac86088149fd433c1cfc23855e646d13c0d8d74aae404b141d36",
+      "note": "Closing approval after frozen install, production bundle, strict TypeScript check, full Trust verification, and complete 14-file 4083-line contract coverage passed; no live provider, vault, wallet, mnemonic, or chain success is claimed."
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019197,
+      "digest": "c961e7d27c9db10cf8b039e474130657bfce93ac64e2bc703f8aa7c1f19296b6",
+      "note": "Fresh definition approval for corrected five-provider response-delivery and request-surface requirements; the corrections document existing code only."
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019234,
+      "digest": "e4f024182a1e996682282b2e6a4b3383c50d9b88c29d2c87b3b171d34aec728a",
+      "note": "Fresh definition approval including explicit evidence mapping for the corrected five-backend, response-delivery, and request-surface requirements."
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019293,
+      "digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+      "note": "Definition approval restored to the already-applied migration contract; follow-up accuracy corrections will use a separate supported change workspace."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019320,
+      "digest": "9d12ab1b8a546b06f7293ec493311cc9e2b0871db3c19126e92822331711cfc0",
+      "note": "Fresh closing approval for the restored already-applied migration definition after production bundle, strict TypeScript check, Trust, and complete coverage passed; follow-up requirement accuracy uses a separate change."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019448,
+      "digest": "77ff6bf541a716d69d4737bcd21e72f235181a59c500dee1dca6be8951e392c7",
+      "note": "Fresh closing approval for migration evidence against the separately approved provider-requirement correction; build, typecheck, Trust, and complete coverage pass without live integration claims."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019553,
+      "digest": "5336acff0acce621f78c980f1f409a1fccfdf983d3cdbc1bbc9f63c60e864803",
+      "note": "Final closing approval after the provider-accuracy delta was accepted and the production build, strict TypeScript check, complete coverage, and migration evidence passed against the final canonical companion."
+    }
+  ],
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-obsidian-corvid-agent-pl",
+      "actor": "user:0xLeif",
+      "reason": "Correct existing provider requirements so AlgoChat polling is not mislabeled as token streaming and browser streaming fetch is not mislabeled as Obsidian requestUrl.",
+      "timestamp": 1784019148,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1784019039,
+        "digest": "24a950273096ac86088149fd433c1cfc23855e646d13c0d8d74aae404b141d36",
+        "note": "Closing approval after frozen install, production bundle, strict TypeScript check, full Trust verification, and complete 14-file 4083-line contract coverage passed; no live provider, vault, wallet, mnemonic, or chain success is claimed."
+      },
+      "prior_verification": {
+        "timestamp": 1784019031,
+        "commit": "044d0249433a1135f69f59cc3cbe18f020783c03",
+        "contract_digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+        "workspace_digest": "2a20160eafac4003cbc4f46f3f821c3fe201de0f4f34a477e09f1faf8c4218af",
+        "acceptance_input_digest": "f1bb3e47e34146cc74073afc96e3502a0f064e2915ae9d22f82363b7110415d2",
+        "passed": true,
+        "commands": [
+          {
+            "command": "fledge lanes run verify",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-plugin-012",
+          "REQ-plugin-013",
+          "REQ-plugin-014",
+          "REQ-plugin-015"
+        ]
+      },
+      "stale_acceptance_input_digest": "f1bb3e47e34146cc74073afc96e3502a0f064e2915ae9d22f82363b7110415d2",
+      "current_acceptance_input_digest": "4544a81c011d0ef0b878f6487b92bc9f5025485759b002d28da566c78a5a4ebd"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-obsidian-corvid-agent-pl",
+      "actor": "user:0xLeif",
+      "reason": "A separately approved documentation change corrects existing provider requirement text after migration acceptance; refresh the migration evidence against the current canonical companion.",
+      "timestamp": 1784019406,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1784019320,
+        "digest": "9d12ab1b8a546b06f7293ec493311cc9e2b0871db3c19126e92822331711cfc0",
+        "note": "Fresh closing approval for the restored already-applied migration definition after production bundle, strict TypeScript check, Trust, and complete coverage passed; follow-up requirement accuracy uses a separate change."
+      },
+      "prior_verification": {
+        "timestamp": 1784019310,
+        "commit": "044d0249433a1135f69f59cc3cbe18f020783c03",
+        "contract_digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+        "workspace_digest": "a2586a6ff1a17c89aec624027e9cb4649fdd33a52f903b0b08fc838e4fcafb91",
+        "acceptance_input_digest": "a6f3855b8cfbcca17939924325ff6dac695e3cd62ab15a28bef6b7362e47e952",
+        "passed": true,
+        "commands": [
+          {
+            "command": "fledge lanes run verify",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-plugin-012",
+          "REQ-plugin-013",
+          "REQ-plugin-014",
+          "REQ-plugin-015"
+        ]
+      },
+      "stale_acceptance_input_digest": "a6f3855b8cfbcca17939924325ff6dac695e3cd62ab15a28bef6b7362e47e952",
+      "current_acceptance_input_digest": "47294ad4a2709ed2677038b872a369762cad47059beab2e772336d8aafe5478f"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-obsidian-corvid-agent-pl",
+      "actor": "user:0xLeif",
+      "reason": "The separately approved provider-accuracy change has now applied its canonical delta; refresh the migration evidence against that final accepted companion.",
+      "timestamp": 1784019518,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1784019448,
+        "digest": "77ff6bf541a716d69d4737bcd21e72f235181a59c500dee1dca6be8951e392c7",
+        "note": "Fresh closing approval for migration evidence against the separately approved provider-requirement correction; build, typecheck, Trust, and complete coverage pass without live integration claims."
+      },
+      "prior_verification": {
+        "timestamp": 1784019430,
+        "commit": "044d0249433a1135f69f59cc3cbe18f020783c03",
+        "contract_digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+        "workspace_digest": "def5a74079ea2c74140b829dfb5f4fbc97be047cc8d6a17a56cc42efdebd851c",
+        "acceptance_input_digest": "47294ad4a2709ed2677038b872a369762cad47059beab2e772336d8aafe5478f",
+        "passed": true,
+        "commands": [
+          {
+            "command": "fledge lanes run verify",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-plugin-012",
+          "REQ-plugin-013",
+          "REQ-plugin-014",
+          "REQ-plugin-015"
+        ]
+      },
+      "stale_acceptance_input_digest": "47294ad4a2709ed2677038b872a369762cad47059beab2e772336d8aafe5478f",
+      "current_acceptance_input_digest": "9b5770d2e13a31170d3f782529cfd82d881c1d7e449b924ca8ea8622cb900771"
+    }
+  ]
 }

@@ -8,4 +8,4 @@ artifact: tasks
 - [x] Preserve plugin APIs, releases, Atlas, providers, wallet, vault, and Obsidian behavior.
 - [x] Add stable IDs, companions, agents, and Trust configuration.
 - [x] Build and typecheck without live calls.
-- [ ] Obtain authorized definition and closing approvals.
+- [x] Map AlgoChat and mnemonic protection sources and requirements at complete measured coverage.

@@ -5,10 +5,11 @@
   "title": "Adopt SpecSync 5.0.1 and Trust 1.0.0 governance for the Obsidian Corvid Agent plugin",
   "description": "Adopt SpecSync 5.0.1 and Trust 1.0.0 governance for the Obsidian Corvid Agent plugin",
   "kind": "migration",
-  "state": "draft",
+  "state": "accepted",
+  "canonical_applied": true,
   "base_commit": "fb3c5a6f0e55fc1725fddfe5943924f487a4ca81",
   "created_at": 1783887404,
-  "updated_at": 1783887413,
+  "updated_at": 1784019553,
   "affected_specs": [
     "plugin"
   ],
