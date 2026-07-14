@@ -1,11 +1,13 @@
 ---
 module: plugin
-version: 2
+version: 4
 status: active
 files:
   - src/main.ts
   - src/chat-view.ts
   - src/corvid-client.ts
+  - src/algochat-provider.ts
+  - src/mnemonic-crypto.ts
   - src/providers.ts
   - src/settings.ts
   - src/memory-commands.ts
@@ -24,7 +26,7 @@ depends_on: []
 
 ## Purpose
 
-Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ollama, Claude (Anthropic), and OpenAI, as well as corvid-agent instances (WebSocket-based agent platform with memory, work tasks, and on-chain identity). Users chat with AI from a sidebar view, optionally injecting vault context. The plugin is provider-agnostic at the chat level — corvid-agent-specific features (memory, work tasks) are conditionally available.
+Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ollama, Claude (Anthropic), and OpenAI; corvid-agent instances over WebSocket; and encrypted on-chain AlgoChat messaging on Algorand. Users chat from a sidebar view with optional vault context. Provider-specific memory, work-task, vault-tool, wallet, and chain features are conditionally available.
 
 ## Public API
 
@@ -34,7 +36,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 |------|------|-------------|
 | `CorvidAgentSettings` | `src/settings.ts` | Plugin configuration (provider, connection, vault integration) |
 | `SerializedChatMessage` | `src/settings.ts` | JSON-serializable chat message for persistence |
-| `ProviderType` | `src/providers.ts` | Union: `"corvid-agent" \| "ollama" \| "claude" \| "openai"` |
+| `ProviderType` | `src/providers.ts` | Union: `"corvid-agent" \| "ollama" \| "claude" \| "openai" \| "algochat"` |
 | `Provider` | `src/providers.ts` | Abstract provider interface |
 | `ProviderConfig` | `src/providers.ts` | Provider configuration shape |
 | `StreamCallbacks` | `src/providers.ts` | Callbacks for streaming responses (onToken, onComplete, onError, onToolCall) |
@@ -53,6 +55,9 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `StreamEvent` | `src/corvid-client.ts` | WebSocket stream event shape for real-time responses |
 | `ConnectionState` | `src/corvid-client.ts` | Union: `"disconnected" \| "connecting" \| "connected" \| "authenticated"` |
 | `CorvidClientEvents` | `src/corvid-client.ts` | Event callbacks for the client (includes `onToolCallUpdate`) |
+| `AlgoNetwork` | `src/algochat-provider.ts` | Union of `"testnet"`, `"mainnet"`, and `"localnet"` |
+| `AlgoChatConfig` | `src/algochat-provider.ts` | Mnemonic, network, target address, and optional localnet URL |
+| `EncryptedMnemonic` | `src/mnemonic-crypto.ts` | Base64 ciphertext, PBKDF2 salt, and AES-GCM IV persisted for an AlgoChat wallet |
 
 ### Exported Classes
 
@@ -66,6 +71,7 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `OpenAIProvider` | `src/providers.ts` | OpenAI Chat Completions API with SSE streaming |
 | `ToolRegistry` | `src/tools/registry.ts` | Tool registration and dispatch — register, unregister, execute, getSchemas |
 | `CorvidAgentSettingTab` | `src/settings.ts` | Settings tab with dynamic fields per provider |
+| `AlgoChatProvider` | `src/algochat-provider.ts` | AlgoChat provider for encrypted Algorand messages and response polling |
 
 ### Exported Constants
 
@@ -86,6 +92,11 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 |----------|------|-----------|---------|-------------|
 | `createProvider` | `src/providers.ts` | `(config: ProviderConfig)` | `Provider` | Factory for non-corvid-agent providers |
 | `registerMemoryCommands` | `src/memory-commands.ts` | `(plugin: CorvidAgentPlugin)` | `void` | Registers memory + selection commands |
+| `createRandomChatAccount` | `src/algochat-provider.ts` | `()` | `ChatAccount` | Creates a new AlgoChat account through the pinned runtime dependency |
+| `validateMnemonic` | `src/algochat-provider.ts` | `(mnemonic: string)` | `boolean` | Validates an AlgoChat account mnemonic |
+| `validateAddress` | `src/algochat-provider.ts` | `(address: string)` | `boolean` | Validates an Algorand target address |
+| `encryptMnemonic` | `src/mnemonic-crypto.ts` | `(mnemonic: string, password: string)` | `Promise<EncryptedMnemonic>` | Encrypts a mnemonic with PBKDF2-derived AES-GCM |
+| `decryptMnemonic` | `src/mnemonic-crypto.ts` | `(encrypted: EncryptedMnemonic, password: string)` | `Promise<string>` | Authenticates and decrypts a persisted mnemonic |
 
 ### Commands
 
@@ -115,6 +126,11 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `maxContextLength` | number | `8000` | All | Max context chars |
 | `enableTools` | boolean | `false` | All | Enable tool dispatch loop |
 | `maxToolCallDepth` | number | `10` | All | Max consecutive tool calls before error |
+| `algoMnemonicEncrypted` | EncryptedMnemonic \| null | `null` | algochat | AES-GCM encrypted wallet mnemonic |
+| `algoMnemonic` | string | `""` | algochat | Legacy plaintext value retained only for migration to encrypted storage |
+| `algoNetwork` | AlgoNetwork | `"testnet"` | algochat | Testnet, mainnet, or localnet selection |
+| `algoTargetAddress` | string | `""` | algochat | Recipient Algorand address |
+| `algoLocalnetUrl` | string | `"http://localhost:4001"` | algochat | Custom local Algod endpoint |
 
 ## Vault Tools
 
@@ -173,6 +189,10 @@ Tools allow the model to interact with the vault during chat. Tools are register
 30. `search_notes` returns an empty `results` array (not an error) when no notes match.
 31. `search_notes` defaults `limit` to 20 when omitted or invalid.
 32. `search_notes` uses `cachedRead` for content access and metadata cache for headings/tags to minimize I/O.
+33. AlgoChat validates the mnemonic and target address, requires an initialized account with at least 0.001 ALGO for its connection test, and never enables memory, work-task, or vault-tool dispatch.
+34. AlgoChat discovers the recipient encryption key before sending, polls only received messages newer than the send time for at most 60 seconds, and honors abort requests before reporting a response.
+35. Testnet and mainnet use the implemented public Nodely Algod and Indexer pairs; localnet derives the Indexer endpoint on port 8980 from the configured Algod URL.
+36. Persisted AlgoChat mnemonics use a random 16-byte salt, random 12-byte IV, PBKDF2-SHA-256 with 250,000 iterations, and AES-256-GCM; authentication failure does not return plaintext.
 
 ## Behavioral Examples
 
@@ -230,6 +250,10 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | Request aborted (new session) | all direct | AbortError caught silently |
 | Malformed SSE data | claude, openai | Line skipped, parsing continues |
 | Server URL unreachable | all | Error displayed in chat view |
+| Mnemonic or target absent/invalid | algochat | Connection test fails before a chain request |
+| Recipient has no published key | algochat | Send reports the missing on-chain encryption key and submits nothing |
+| No response within 60 seconds | algochat | Chat completes with the implemented timeout message |
+| Wrong mnemonic password or altered ciphertext | algochat | AES-GCM decryption rejects without returning plaintext |
 
 ## Dependencies
 
@@ -242,6 +266,8 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | Anthropic API | `/v1/messages` (streaming SSE), `/v1/models` (health check) |
 | OpenAI API | `/v1/chat/completions` (streaming SSE), `/v1/models` (health check) |
 | corvid-agent API | `/ws` (WebSocket), `/api/sessions`, `/api/mcp/recall-memory`, `/api/mcp/save-memory`, `/api/work-tasks` |
+| `@corvidlabs/ts-algochat` | Algorand clients, chat accounts, validation, encrypted messaging, key publication, and polling |
+| Web Crypto | PBKDF2-SHA-256 and AES-256-GCM mnemonic protection |
 
 ### Consumed By
 
@@ -262,3 +288,5 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | 2026-04-15 | corvid-agent | Initial spec — v0.1.0 with corvid-agent only |
 | 2026-04-15 | corvid-agent | v0.2.0 — Multi-backend support (Ollama, Claude, OpenAI), spec-sync integration |
 | 2026-04-16 | corvid-agent | v0.3.0 — ClaudeProvider tool_use/tool_result support (#13) |
+| 2026-07-14 | SpecSync | CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-obsidian-corvid-agent-pl: Adopt SpecSync 5.0.1 and Trust 1.0.0 governance for the Obsidian Corvid Agent plugin |
+| 2026-07-14 | SpecSync | CHG-0002-correct-existing-provider-response-delivery-and-request-surface-requirements-to: Correct existing provider response-delivery and request-surface requirements to match the current five-backend implementation |

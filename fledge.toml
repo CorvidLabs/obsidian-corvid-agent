@@ -1,6 +1,7 @@
 [tasks]
-build = "node esbuild.config.mjs production"
-dev = "node esbuild.config.mjs"
+build = "bun run build"
+typecheck = "bun x tsc --noEmit"
+dev = "bun run dev"
 spec-check = "bash scripts/specsync.sh check"
 spec-coverage = "bash scripts/specsync.sh coverage"
 spec-score = "bash scripts/specsync.sh score"
@@ -13,3 +14,7 @@ steps = ["build", "spec-check"]
 
 [lanes.pre-commit]
 steps = ["build", "spec-check"]
+
+[lanes.verify]
+description = "Build and typecheck the Obsidian plugin without contacting configured providers"
+steps = ["build", "typecheck"]

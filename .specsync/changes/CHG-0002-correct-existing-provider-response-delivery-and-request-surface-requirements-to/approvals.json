@@ -1,0 +1,19 @@
+{
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019377,
+      "digest": "fc50a869a9d784b212345987bb366e9669bef661b1cf1ffc7e9cc760872c5476",
+      "note": "Definition approval for documentation-only corrections to the existing five-provider response and request-surface contract."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784019473,
+      "digest": "3e71f34289ec521df23cb844b3b315d088bb94c8aa6b3a01195793effb55daff",
+      "note": "Closing approval after the production bundle and strict TypeScript check confirmed the corrected five-provider delivery and request-surface contract; no live provider success is claimed."
+    }
+  ],
+  "reopenings": []
+}
