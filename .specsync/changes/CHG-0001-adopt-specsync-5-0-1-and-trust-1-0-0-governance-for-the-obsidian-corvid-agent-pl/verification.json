@@ -1,9 +1,384 @@
 {
-  "timestamp": 1784019547,
-  "commit": "044d0249433a1135f69f59cc3cbe18f020783c03",
+  "timestamp": 1784415627,
+  "commit": "3706b376cb9d016bc9a7fefd189a6adfbd544658",
   "contract_digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
-  "workspace_digest": "8b4152c1fc3e024436ea5fc9c2f1c0e71479e05b66007bfd7fc318d42d3bf037",
-  "acceptance_input_digest": "9b5770d2e13a31170d3f782529cfd82d881c1d7e449b924ca8ea8622cb900771",
+  "workspace_digest": "2f1fc561543c47f73af74589c9ac9176e68bf76f41b8acc5d345e35b1017a3a8",
+  "acceptance_input_digest": "a4c84b3d28bd111861476bd043583bcf636ae1fbeaeeb193293b8dc22522c896",
+  "acceptance_manifest": {
+    "schema_version": 1,
+    "entries": [
+      {
+        "path": ".attest.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "2581fe52873327db0bbac357a5102a0dbb18a1eea5a690b7b75eaa571e50cf65",
+        "entry_digest": "2904a18e18582f191a1d359d16e7bc61a7596ac77f62e55a94de56b3da8c796e",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".augur.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "17f6ad5b84b4db012f0e3f398a96a478c1324fd47e72e1dd2a13c7cf9a432983",
+        "entry_digest": "bac13c952da05292bdd0af5849aad9d9def3ae5afc830fa42b6914b2fd874beb",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/atlas.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "5324b755b9de0c6f19eb64661e8d4cad20c6937bb9cb4daee761aa6d97adce66",
+        "entry_digest": "3138eecb5839192349f8d12158a689c14a749daf55dec6a75c1ffa9a4fbb551c",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/checks.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "96c8003fc27bec0d2ecb2839be4493872cb0144590dd3aba7405d36541146229",
+        "entry_digest": "3d93c2fae7a04493c2a7645117a6b4a14cfaffbd6bdf6361da40c6dea5abce49",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/release.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "5cc12b2a0045daecb514dbb2b7dcc48d63696ec6bd526b56d003d47bf7386bb8",
+        "entry_digest": "f4bf54a070f3240bb91abc2691c994ab5a861ccb6db7eb7e53df0b4c30477cb7",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/trust.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "ba852dd9591f9feca92245073eb2d93e240ebb9c365d028716ccbc31ae8661b6",
+        "entry_digest": "d25a90d3ef80e676a602ab93f88a0f0d3bc25701c6d0fbe2caf5e2a718b1dfe5",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/config.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "f12946dae99b6598c89e1e006ee7e9ca7fb88ef02c92b4166fd899f367b118f0",
+        "entry_digest": "10843d8a84fab2050f7b2bc31aac5b64d1dc9a8baa91b3eb96a6474058fc2195",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/sdd.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "a13dc13d597f0d0cfcfd55a3b1ca78b74cd6251e7d704cda17095c686f0bbec0",
+        "entry_digest": "436720794ef3925c1221efc12c65dd0877061f03b0204a6d593d5912512f6fa5",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/version",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "23b6867924dfeb9cf532753438dc919669bf93ad88215e11c15630a4acbf4299",
+        "entry_digest": "339b5f88be30302336707baa5dab61fd4b324d04e495d3bb772cf893fb4f73bc",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".trust.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "7ad30f08b79efe3347fef1983cfd478fc5dc65e4b62b4a5f99fefc07b5ac3625",
+        "entry_digest": "4ec85863c1b84650cfa8de3b6be85bde0ae6de080f3049b3f1bc0ff611610d05",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "AGENTS.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "d2561f21b1519604865b1ae0c4a6586f5f2bea591c9b3b7d8c4ae0f274b73df5",
+        "entry_digest": "616b86acb3d91a5f9880826f4063978e95d46397de849b7566f3688823302e01",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "bun.lock",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "3e1245beec42092fd726f774fcdcf7e5556e0de885b1a371587f7e73b866d082",
+        "entry_digest": "0001d32668d12a98a100bd838ceaee7f57e3606939eee3bf9e1d20bc6a1defd4",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "fledge.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "62fdc65775af507fd8db3068d64aaa7cccf3367abeeb99aa709023650cbec0f7",
+        "entry_digest": "be241c7ca2982320070bd3fc07dae5d81cfabddd69326d23adbfa45d68b5eb0b",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "manifest.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "13b88404840bad7f0686f6721faa0488725d507b5f2543edf4999f258155784e",
+        "entry_digest": "e12f9b3ca2f809ebc28298dbd4b2db0e49e077e3fe6167c85e6ab947d8def1e6",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "package.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "9767229a779f1bffaaaaa825d1982f8164d66b628279f9b60c36db4d4c9a036c",
+        "entry_digest": "6df123bdd8f54e3ce639ed14c251933c83956fce0772b4b89fdb09adb7ba7a7c",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "scripts/specsync.sh",
+        "kind": "file",
+        "mode": 33261,
+        "payload_digest": "6399fe489c25303f9dc2ac68a4c8e6215fb2a554dc626b0a03324aef210704d9",
+        "entry_digest": "45bff37fb116eb17546d5aef9cdfc2442344af1e134898ebb999a8435d4cc81f",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "specs/plugin/context.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "2fd999ad74b129eaf0d1ff9db923f8f146cdd46e80435a941cfec7a041c6deb3",
+        "entry_digest": "a2cf94bc4ac5e71b9d0d49ff254c6151d3005fc5b37120f1bf770573d7a784fc",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "specs/plugin/design.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "fcf4df8c3622bb7df4535c3cafbb6d2317cc08c7e7b2f327fbeb341ba83c8ee5",
+        "entry_digest": "447caf11421b6a2153abc8d00c75a06c6d08a9b463865bcb9481f7b780671f36",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "specs/plugin/plugin.spec.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "f2c0e277f3459842aa0cee498babeca6e8097275f06211bae26684d61b10f0f1",
+        "entry_digest": "98fa956433ba7c53c57955df15f7bd82de6930518d771af94148854fe4eb63bc",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "specs/plugin/requirements.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "8590b2e2233f783fa3cc2d29d96c78455ca53a835d7a7ac5759d5b74c3a05a3c",
+        "entry_digest": "7b267891e39ce7a8998b1bc4acd586b366ed2a303ca10e3e0a1e841f0e1301e6",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "specs/plugin/tasks.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "361d320e425c2e45140d44d44aa7467223070f6ca88f2c5385a388bd8444d323",
+        "entry_digest": "014859d1b46313d2a7749d2619be68388317ae156b01e7de7a2048168d1da203",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "specs/plugin/testing.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "6c7e1f82db831fe0d9558c8aeb72454d25720e540f22340e4731f7a5c6954676",
+        "entry_digest": "fdeeecc5231ce2b90734ed174f41447e47e400f3f5ce4f8d9039c8e874c4c1f3",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/algochat-provider.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "c216e0a5c3421daf6c68d5e2db2e46163c995f01e18c42d8c26e4f0587337c15",
+        "entry_digest": "793b5ced88ad0cc19008c29e238ec606b5328e879237adc0aedea00090d9b823",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/chat-view.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "76be80ce224f1b8bcc88d1578fff379f757676cccf2c6054038d869d9ac9f350",
+        "entry_digest": "ff7c27c007109a5bd2545f69ef06cac9a54d3fd5015053d8eb0f1371d02c2809",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/corvid-client.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "6173b87d72a02fd12cd9d75945499beb4d57b300fdece37ad0045f4def3677f2",
+        "entry_digest": "85aa152991a2ae63fa2e6d809ce214b2aaf435c4fdcd304ab117b9261623c8f0",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/main.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "1cc4c42bc13e729caa91bf77377528db8272904e3ff3b2178206922ade4ca071",
+        "entry_digest": "46dad66b181770214bb8eac8e8fe8302a498a03a1f548bf87b21a760f329f65c",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/memory-commands.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "6408e5b33940524f4928ae0494301f4b60e4ab07b92042ba1624780c4ec21c7c",
+        "entry_digest": "f6f8636a14ddc8a4d99585cc855eb8baaf7f4713c21a009c5a78c2fd433af943",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/mnemonic-crypto.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "4d14dcc227b7c88ac6bbced244dafe38e8cde1d94c6b922827655e7584359c97",
+        "entry_digest": "1e94d49e2832fc5d45aeb36f864079761bc14905b4366711075adce0baead113",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/providers.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "bebce3b50b586795baf069069c7e0fba633f1e902c33ad0d1d20f39f90056653",
+        "entry_digest": "4b276e22d3db180f90d0bffbab37bf48323ac3ad6f969052fbe9510ffb3c135c",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/settings.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "926b9f29ccdccf053ce7aa3953944050839a096bb604bbad7d550ca915ee128f",
+        "entry_digest": "36ef4127d9a39c7d5198ac097b9da5e678c4aafe467ba5e1c21ffcf9ae9fe122",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/tools/get-note-metadata.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "00b492780cafb6d500c28a190fefba13c9244cc4c807796433ef3aa33ac3d974",
+        "entry_digest": "012be98c61face43628f95b14a0dce36e45b711bc596dfc0bc08714dce332df2",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/tools/list-notes.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "df98f6ea55f6896625fdf4517dc38409ecfeaa86f673028b646ac6f5ae4a6a20",
+        "entry_digest": "0470d5c2d321b56d6f930b6dfca66ca2265f4ef124d8058afdbbce0f7aa13d52",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/tools/read-note.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "8db903e8ea4537e31b00c9c0327ff89930bd32f35ea4981d574beb0226987df6",
+        "entry_digest": "73d7a4cae44aabbe1fe49b5016d1f37c32c00dfb6bceeaa51aeabac27d5c7873",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/tools/recall-memory.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "92e765e99120911327dd27f8a6223aedb08c942a83d192bb1cd9b7d5208a97b8",
+        "entry_digest": "33e7c5a8b3b6e9af322ce3d06a9371826133c6fb89edb7406f70049a77f279b3",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/tools/registry.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "fbd7e593016e44f061eb5bcb636313aeb770ce91bf0ff5c25ccbdf4c0436b691",
+        "entry_digest": "f71b55489e72b91fa844b9d14b34764b10504a87f1258a2e68dc75651adba81d",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "src/tools/search-notes.ts",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "12f5c65ebd47b88666404cc33d8a27c7246ac23f8a7dd0d4b99e56980cd589e7",
+        "entry_digest": "ef76152201a4be3f8ce126fa0883d5ceb6126225558dc5e512f70baff57f7b8d",
+        "owners": [
+          "plugin"
+        ]
+      },
+      {
+        "path": "styles.css",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "c9e6c5797adf72abaf77bbb8ef9cf00db5be7892dc7cd0646eacb97091f68a38",
+        "entry_digest": "99119b7640e23fe2622f5016465759d666e2745f7b690a6d6d9d57ea7e30194a",
+        "owners": [
+          "plugin"
+        ]
+      }
+    ]
+  },
   "passed": true,
   "commands": [
     {

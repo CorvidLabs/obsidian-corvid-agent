@@ -146,6 +146,46 @@
         "REQ-plugin-014",
         "REQ-plugin-015"
       ]
+    },
+    {
+      "timestamp": 1784415588,
+      "commit": "3706b376cb9d016bc9a7fefd189a6adfbd544658",
+      "contract_digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+      "workspace_digest": "2f1fc561543c47f73af74589c9ac9176e68bf76f41b8acc5d345e35b1017a3a8",
+      "passed": false,
+      "commands": [
+        {
+          "command": "fledge lanes run verify",
+          "success": false,
+          "exit_code": 1
+        }
+      ],
+      "requirement_ids": [
+        "REQ-plugin-012",
+        "REQ-plugin-013",
+        "REQ-plugin-014",
+        "REQ-plugin-015"
+      ]
+    },
+    {
+      "timestamp": 1784415627,
+      "commit": "3706b376cb9d016bc9a7fefd189a6adfbd544658",
+      "contract_digest": "56cc44c401a18572364d290207cd68e2b535b7786af7ca271620a358cd95972f",
+      "workspace_digest": "2f1fc561543c47f73af74589c9ac9176e68bf76f41b8acc5d345e35b1017a3a8",
+      "passed": true,
+      "commands": [
+        {
+          "command": "fledge lanes run verify",
+          "success": true,
+          "exit_code": 0
+        }
+      ],
+      "requirement_ids": [
+        "REQ-plugin-012",
+        "REQ-plugin-013",
+        "REQ-plugin-014",
+        "REQ-plugin-015"
+      ]
     }
   ]
 }
