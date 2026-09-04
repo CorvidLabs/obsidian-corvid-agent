@@ -1,6 +1,6 @@
 ---
 id: CHG-0002-correct-existing-provider-response-delivery-and-request-surface-requirements-to
-state: accepted
+state: archived
 type: documentation
 base_commit: 044d0249433a1135f69f59cc3cbe18f020783c03
 ---
