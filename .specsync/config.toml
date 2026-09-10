@@ -1,4 +1,4 @@
-# SpecSync 5 configuration
+# SpecSync 6 configuration
 # Docs: https://github.com/CorvidLabs/spec-sync
 
 specs_dir = "specs"
