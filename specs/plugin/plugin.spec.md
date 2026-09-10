@@ -1,6 +1,6 @@
 ---
 module: plugin
-version: 4
+version: 5
 status: active
 files:
   - src/main.ts
@@ -43,13 +43,11 @@ Multi-backend AI chat plugin for Obsidian. Supports direct API connections to Ol
 | `ChatHistoryMessage` | `src/providers.ts` | Role-based message for multi-turn context |
 | `Tool` | `src/tools/registry.ts` | Vault tool interface (name, description, inputSchema, execute) |
 | `ToolInputSchema` | `src/tools/registry.ts` | JSON Schema shape for tool input parameters |
-| `ToolResult` | `src/tools/registry.ts` | Tool execution result: `{ content: string, isError?: boolean }` |
-| `ToolCall` | `src/tools/registry.ts` | Tool invocation record: id, name, input |
+| `ToolResult` | `src/tools/registry.ts`, `src/providers.ts` | Declared in both files with different shapes: the registry's vault-tool execution result `{ content: string, isError?: boolean }`, and the provider wire block sent back to the model `{ tool_use_id: string, content: string, is_error?: boolean }` |
+| `ToolCall` | `src/tools/registry.ts`, `src/providers.ts` | Tool invocation record `{ id: string, name: string, input: Record<string, unknown> }`, declared identically in both files: the registry copy is held by `ToolCallRecord`, the providers copy is emitted through `StreamCallbacks.onToolCall` |
 | `ToolCallStatus` | `src/tools/registry.ts` | Union: `"pending" \| "running" \| "done" \| "error"` |
 | `ToolCallRecord` | `src/tools/registry.ts` | Full tool call state: call, status, result |
 | `ToolDefinition` | `src/providers.ts` | Tool schema for providers (name, description, input_schema) |
-| `ToolCall` | `src/providers.ts` | Emitted when model invokes a tool (id, name, input) |
-| `ToolResult` | `src/providers.ts` | Result returned to model after tool execution (tool_use_id, content, is_error) |
 | `MessageContent` | `src/providers.ts` | Union of text, tool_use, and tool_result content blocks |
 | `ChatMessage` | `src/corvid-client.ts` | Runtime chat message with Date timestamp |
 | `StreamEvent` | `src/corvid-client.ts` | WebSocket stream event shape for real-time responses |
@@ -290,3 +288,4 @@ Tools allow the model to interact with the vault during chat. Tools are register
 | 2026-04-16 | corvid-agent | v0.3.0 — ClaudeProvider tool_use/tool_result support (#13) |
 | 2026-07-14 | SpecSync | CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-obsidian-corvid-agent-pl: Adopt SpecSync 5.0.1 and Trust 1.0.0 governance for the Obsidian Corvid Agent plugin |
 | 2026-07-14 | SpecSync | CHG-0002-correct-existing-provider-response-delivery-and-request-surface-requirements-to: Correct existing provider response-delivery and request-surface requirements to match the current five-backend implementation |
+| 2026-09-10 | 0xLeif | Deduplicate the `ToolCall` and `ToolResult` Public API rows; each name now has one row naming both declaration sites in `src/tools/registry.ts` and `src/providers.ts` |
