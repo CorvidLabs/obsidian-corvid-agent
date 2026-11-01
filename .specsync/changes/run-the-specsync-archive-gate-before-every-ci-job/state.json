@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "workflow_origin_version": 1,
+  "id": "run-the-specsync-archive-gate-before-every-ci-job",
+  "slug": "run-the-specsync-archive-gate-before-every-ci-job",
+  "title": "Run the SpecSync archive gate before every CI job",
+  "description": "Run the SpecSync archive gate before every CI job",
+  "kind": "operations",
+  "state": "draft",
+  "base_commit": "c62a3b01d7f3e166c41613c07f3c9c1d615699b2",
+  "created_at": 1793541009,
+  "updated_at": 1793541014,
+  "affected_specs": [],
+  "affected_paths": [
+    ".github/workflows/atlas.yml",
+    ".github/workflows/checks.yml",
+    ".github/workflows/trust.yml"
+  ],
+  "no_spec_change": true,
+  "no_spec_change_rationale": "CI workflow ordering only; no canonical spec owns .github/workflows",
+  "acceptance_criteria": [
+    "Each pull_request/push workflow (atlas.yml, checks.yml, trust.yml) starts with a job named Archive that checks out the head commit and runs CorvidLabs/spec-sync pinned to 106aaa43d0bcf049f19b173ddb63815a25c3f931 with archive-gate-only true, and every other job in those workflows needs it directly or transitively, so no other CI job runs while a SpecSync change under .specsync/changes/ is still open"
+  ],
+  "selected_artifacts": [
+    "context",
+    "plan",
+    "testing"
+  ],
+  "dependencies": [],
+  "answers": {
+    "architecture_risk": "no",
+    "public_contract": "no"
+  }
+}
