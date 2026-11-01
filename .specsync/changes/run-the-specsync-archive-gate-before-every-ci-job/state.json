@@ -6,10 +6,10 @@
   "title": "Run the SpecSync archive gate before every CI job",
   "description": "Run the SpecSync archive gate before every CI job",
   "kind": "operations",
-  "state": "draft",
+  "state": "approved",
   "base_commit": "c62a3b01d7f3e166c41613c07f3c9c1d615699b2",
   "created_at": 1793541009,
-  "updated_at": 1793541014,
+  "updated_at": 1793542007,
   "affected_specs": [],
   "affected_paths": [
     ".github/workflows/atlas.yml",
